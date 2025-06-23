@@ -321,7 +321,6 @@ class SigmaSummaryGenerator:
         fields = base_log.get('fields', {})
         fieldguidance = base_log.get('fieldguidance', {})
 
-        # >>>> Key Change: Support all blocks, not just 'selection'
         block_fields_dict = {}
         for block_name, block_content in fields.items():
             fg_selection = fieldguidance.get(block_name, {})

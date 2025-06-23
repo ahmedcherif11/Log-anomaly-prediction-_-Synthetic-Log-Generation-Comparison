@@ -31,7 +31,6 @@ detection:
             - 'mpengine.dllss'
         hashes:
             - 'c4d3f8b7e0f2a1b5c6d8e9f0a1b2c3d4'  # Example hash, replace with actual
-            - 'd4c3b2a1e0f8c6d5b7a1b2c3e4f5d6c7'  # Example hash, replace with actual
     condition: selection
 falsepositives:
     - MsMpEng might crash if the "C:\" partition is full

@@ -1,39 +1,32 @@
 {
-  "channel": "image_load",
-  "description": "Detects potential DLL sideloading of \"edputil.dll\"",
-  "tactic": [
-    "Defense Evasion",
-    "Privilege Escalation"
-  ],
+  "channel": "application",
+  "description": "This rule detects a suspicious crash of the Microsoft Malware Protection Engine",
+  "tactic": "Defense Evasion",
   "technique": [
-    "t1574.001"
+    "t1211",
+    "t1562.001"
   ],
   "fields": {
     "selection": {
-      "ImageLoaded|endswith": "\\edputil.dll"
-    },
-    "filter_main_generic": {
-      "ImageLoaded|startswith": [
-        "C:\\Windows\\System32\\",
-        "C:\\Windows\\SysWOW64\\",
-        "C\\Windows\\WinSxS\\"
+      "Provider_Name": "Application Error",
+      "EventID": 1000,
+      "Data|contains|all": [
+        "MsMpEng.exes",
+        "mpengine.dllss"
+      ],
+      "hashes": [
+        "c4d3f8b7e0f2a1b5c6d8e9f0a1b2c3d4"
       ]
     }
   },
   "fieldguidance": {
     "selection": {
-      "ImageLoaded ends with": [
-        "\\edputil.dll"
-      ]
-    },
-    "filter_main_generic": {
-      "ImageLoaded starts with": [
-        "C:\\Windows\\System32\\",
-        "C:\\Windows\\SysWOW64\\",
-        "C\\Windows\\WinSxS\\"
+      "Data contains all of": [
+        "MsMpEng.exes",
+        "mpengine.dllss"
       ]
     }
   },
-  "message": "Driver loaded: \\edputil.dll | Driver loaded: C:\\Windows\\System32\\, C:\\Windows\\SysWOW64\\",
-  "condition": "selection and not 1 of filter_main_*"
+  "message": "Event from provider: Application Error | Log references: MsMpEng.exes, mpengine.dllss",
+  "condition": "selection"
 }
