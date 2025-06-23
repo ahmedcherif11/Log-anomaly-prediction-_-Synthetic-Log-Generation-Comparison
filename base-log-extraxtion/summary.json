@@ -1,0 +1,39 @@
+{
+  "channel": "image_load",
+  "description": "Detects potential DLL sideloading of \"edputil.dll\"",
+  "tactic": [
+    "Defense Evasion",
+    "Privilege Escalation"
+  ],
+  "technique": [
+    "t1574.001"
+  ],
+  "fields": {
+    "selection": {
+      "ImageLoaded|endswith": "\\edputil.dll"
+    },
+    "filter_main_generic": {
+      "ImageLoaded|startswith": [
+        "C:\\Windows\\System32\\",
+        "C:\\Windows\\SysWOW64\\",
+        "C\\Windows\\WinSxS\\"
+      ]
+    }
+  },
+  "fieldguidance": {
+    "selection": {
+      "ImageLoaded ends with": [
+        "\\edputil.dll"
+      ]
+    },
+    "filter_main_generic": {
+      "ImageLoaded starts with": [
+        "C:\\Windows\\System32\\",
+        "C:\\Windows\\SysWOW64\\",
+        "C\\Windows\\WinSxS\\"
+      ]
+    }
+  },
+  "message": "Driver loaded: \\edputil.dll | Driver loaded: C:\\Windows\\System32\\, C:\\Windows\\SysWOW64\\",
+  "condition": "selection and not 1 of filter_main_*"
+}

@@ -1,0 +1,16 @@
+{
+  "channel": "image_load",
+  "description": "Detects potential DLL sideloading of \"edputil.dll\"",
+  "fields": {
+    "selection": {
+      "ImageLoaded|endswith": "\\edputil.dll"
+    }
+  },
+  "fieldguidance": {
+    "selection": {
+      "ImageLoaded ends with": "\\edputil.dll"
+    }
+  },
+  "message": "Driver loaded: \\edputil.dll",
+  "condition": "selection and not 1 of filter_main_*"
+}
