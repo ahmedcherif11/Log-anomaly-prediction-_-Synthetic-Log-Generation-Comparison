@@ -26,9 +26,6 @@ detection:
         Data|contains|all:
             - 'MsMpEng.exe'
             - 'mpengine.dll'
-        Data|contains|all:
-            - 'MsMpEng.exes'
-            - 'mpengine.dllss'
         hashes:
             - 'c4d3f8b7e0f2a1b5c6d8e9f0a1b2c3d4'  # Example hash, replace with actual
     condition: selection

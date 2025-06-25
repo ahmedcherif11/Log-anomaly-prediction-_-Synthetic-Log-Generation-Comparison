@@ -2,6 +2,7 @@ import yaml
 import json
 from pathlib import Path
 import argparse
+import re
 import itertools
 
 
@@ -155,79 +156,67 @@ class SigmaSummaryGenerator:
     def parse_condition(self, condition, selection_blocks):
         import re
 
-        tokens = re.findall(r'[\w\*]+(?:_[\w\*]+)*\*?', condition)
-        keywords = {'and', 'or', 'not', '1', 'of', 'all', 'none'}
-        block_tokens = [ t for t in tokens if t.lower() not in keywords ]
-
-        expanded_blocks = []
-        for token in block_tokens:
-            if '*' in token:
-                pattern = re.compile(token.replace('*', '.*'))
-                matches = [ name for name in selection_blocks if pattern.fullmatch(name) ]
-                expanded_blocks.extend(matches)
+        # Helper: expand wildcards
+        def expand_blocks(pattern, blocks):
+            if '*' in pattern:
+                regex = re.compile(pattern.replace('*', '.*'))
+                return [b for b in blocks if regex.fullmatch(b)]
             else:
-                expanded_blocks.append(token)
+                return [pattern] if pattern in blocks else []
 
-        expanded_blocks = list(set(expanded_blocks))
+        # Find 'and ( ... or ... )' group
+        m = re.match(r'(.+?)\s+and\s+\((.+)\)', condition)
+        if m:
+            left, right_group = m.groups()
+            left = left.strip()
+            fixed_blocks = expand_blocks(left, selection_blocks)
+            or_blocks = []
+            for branch in re.split(r'\s+or\s+', right_group):
+                branch = branch.strip()
+                if branch.startswith('all of'):
+                    blocks = branch.replace('all of', '').strip()
+                    all_of = expand_blocks(blocks, selection_blocks)
+                    or_blocks.append({'all_of': all_of})
+                elif branch.startswith('1 of'):
+                    blocks = branch.replace('1 of', '').strip()
+                    one_of = expand_blocks(blocks, selection_blocks)
+                    or_blocks.append({'one_of': one_of})
+                # You can add more logic for 'none of' or other cases as needed
+            return fixed_blocks, or_blocks, []
+        else:
+            # fallback: flat case, works like before
+            tokens = re.findall(r'[\w\*]+(?:_[\w\*]+)*\*?', condition)
+            keywords = {'and', 'or', 'not', '1', 'of', 'all', 'none'}
+            block_tokens = [ t for t in tokens if t.lower() not in keywords ]
 
-        excluded_blocks = []
-        if 'not' in condition:
-            not_matches = re.findall(r'not\s+(?:1 of|all of)?\s*([\w\*]+)', condition)
-            for n in not_matches:
-                if '*' in n:
-                    pattern = re.compile(n.replace('*', '.*'))
-                    matches = [ name for name in selection_blocks if pattern.fullmatch(name) ]
-                    excluded_blocks.extend(matches)
-                else:
-                    excluded_blocks.append(n)
+            expanded_blocks = []
+            for token in block_tokens:
+                expanded_blocks.extend(expand_blocks(token, selection_blocks))
+            expanded_blocks = list(set(expanded_blocks))
 
-        included_blocks = [ b for b in expanded_blocks if b not in excluded_blocks ]
+            excluded_blocks = []
+            if 'not' in condition:
+                not_matches = re.findall(r'not\s+(?:1 of|all of)?\s*([\w\*]+)', condition)
+                for n in not_matches:
+                    excluded_blocks.extend(expand_blocks(n, selection_blocks))
 
-        # Detect fixed vs variable:
-        variable_blocks = []
-        fixed_blocks = []
+            included_blocks = [ b for b in expanded_blocks if b not in excluded_blocks ]
+            variable_blocks = []
+            fixed_blocks = []
 
-        # If "1 of X"
-        if '1 of' in condition:
-            one_of_matches = re.findall(r'1 of\s*([\w\*]+)', condition)
-            for token in one_of_matches:
-                if '*' in token:
-                    pattern = re.compile(token.replace('*', '.*'))
-                    matches = [ name for name in included_blocks if pattern.fullmatch(name) ]
-                    variable_blocks.extend(matches)
-                else:
-                    variable_blocks.append(token)
+            if '1 of' in condition:
+                one_of_matches = re.findall(r'1 of\s*([\w\*]+)', condition)
+                for token in one_of_matches:
+                    variable_blocks.extend(expand_blocks(token, included_blocks))
 
-        # Fixed = all other included blocks
-        fixed_blocks = [ b for b in included_blocks if b not in variable_blocks ]
+            fixed_blocks = [ b for b in included_blocks if b not in variable_blocks ]
 
-        return fixed_blocks, variable_blocks, excluded_blocks
-
-    def generate_base_logs_from_condition(self):
-        with open(self.input_path, 'r', encoding='utf-8') as f:
-            rule = yaml.safe_load(f)
-
-        detection = rule.get('detection', {})
-        condition = detection.get('condition', '')
-
-        # Step 1: collect all available selection block names
-        selection_blocks = { key: value for key, value in detection.items() if key != 'condition' }
-        fixed_blocks= []
-        variable_blocks = []
-        excluded_blocks = []
-        if not condition:
-            print("No condition found in the rule. Cannot generate base logs.")
-            return []   
-        # Step 2: parse the condition to identify included, excluded, fixed, and variable blocks
-        fixed_blocks, variable_blocks, excluded_blocks = self.parse_condition(condition, selection_blocks)
-        print(fixed_blocks, variable_blocks, excluded_blocks)
-        # Step 3: determine which blocks to include in the base log
-
-
-        # Step 4: generate combinations
+            # No OR branch, just AND/1-of
+            return fixed_blocks, [{'one_of': variable_blocks}] if variable_blocks else [], excluded_blocks
+        
+    def handle_variable_blocks(self, condition, variable_blocks, fixed_blocks, selection_blocks, rule):
         result_base_logs = []
-
-        if '1 of' in condition and not 'not 1 of' in condition:
+        if '1 of' in condition and not 'not 1 of' in condition and variable_blocks:
             for block in variable_blocks:
                 block_value = selection_blocks.get(block, {})
                 single_log = {
@@ -245,7 +234,6 @@ class SigmaSummaryGenerator:
 
                 # Add fixed blocks from AND part:
                 if fixed_blocks:
-                    print(f"Adding fixed blocks: {fixed_blocks}")
                     for fb in fixed_blocks:
                         fb_value = selection_blocks.get(fb, {})
                         single_log['fields'][fb] = fb_value
@@ -257,8 +245,6 @@ class SigmaSummaryGenerator:
                     single_log['condition'] = ' and '.join([block] + fixed_blocks)
 
                 result_base_logs.append(single_log)
-
-
         elif 'all of' in condition and not 'not all of' in condition:
             base_log = {
                 'channel': rule.get('logsource', {}).get('service') or rule.get('logsource', {}).get('category', 'unknown'),
@@ -275,11 +261,11 @@ class SigmaSummaryGenerator:
                 base_log['fieldguidance'][block] = guidance
                 if message:
                     base_log['message'] += message + " | "
+                # For 'all of', the condition should reflect all fixed blocks joined by 'and'
+                base_log['condition'] = ' and '.join(fixed_blocks)
             result_base_logs.append(base_log)
-
         else:
-            # Default: AND
-            print("ena houni")
+        # Default: AND
             base_log = {
                 'channel': rule.get('logsource', {}).get('service') or rule.get('logsource', {}).get('category', 'unknown'),
                 'description': rule.get('description', ''),
@@ -295,9 +281,67 @@ class SigmaSummaryGenerator:
                 base_log['fieldguidance'][block] = guidance
                 if message:
                     base_log['message'] += message + " | "
+                base_log['condition'] = ' and '.join(fixed_blocks)
+
             result_base_logs.append(base_log)
+        return result_base_logs
+    
+
+
+    def generate_base_logs_from_condition(self):
+        with open(self.input_path, 'r', encoding='utf-8') as f:
+            rule = yaml.safe_load(f)
+
+        detection = rule.get('detection', {})
+        condition = detection.get('condition', '')
+        print(f"Processing detection condition: {condition}")
+
+        # Step 1: collect all available selection block names
+        selection_blocks = { key: value for key, value in detection.items() if key != 'condition' }
+        fixed_blocks= []
+        variable_blocks1 = []
+        excluded_blocks = []
+        if not condition:
+            print("No condition found in the rule. Cannot generate base logs.")
+            return []   
+        # Step 2: parse the condition to identify included, excluded, fixed, and variable blocks
+        fixed_blocks, variable_blocks1, excluded_blocks = self.parse_condition(condition, selection_blocks)
+        fixed_blocks1 = fixed_blocks.copy()  # Keep a copy of fixed blocks for later use
+        print(fixed_blocks, variable_blocks1, excluded_blocks)
+        # Step 3: determine which blocks to include in the base log
+        result_base_logs = []
+
+        for block in variable_blocks1: 
+            print(f"Processing variable block: {block}") 
+
+            if 'all_of' in block:
+                fixed_blocks.extend(block['all_of'])
+                print(f"Adding fixed blocks from 'all_of': {block['all_of']}")
+                print(f"Current fixed blocks: {fixed_blocks}")
+                variable_blocks = []
+            elif 'one_of' in block:
+                fixed_blocks = fixed_blocks1.copy()  # Reset fixed blocks to original
+                variable_blocks = block['one_of']
+                print(f"Variable blocks from 'one_of': {variable_blocks}")
+                print(f"Current variable blocks: {variable_blocks}")
+            else:
+                fixed_blocks = fixed_blocks1.copy()
+            print(fixed_blocks, variable_blocks, excluded_blocks)
+            # Step 4: generate combinations
+
+            result_base_logs.extend(
+                self.handle_variable_blocks(condition, variable_blocks, fixed_blocks, selection_blocks, rule)
+            )
+        if not variable_blocks1 :
+            result_base_logs.extend(
+                self.handle_variable_blocks(condition, [], fixed_blocks1, selection_blocks, rule)
+            )
+
+  
+        
 
         return result_base_logs
+    
     def generate_sub_variants(self, base_log):
         import itertools
 

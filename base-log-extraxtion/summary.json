@@ -1,32 +1,99 @@
 {
-  "channel": "application",
-  "description": "This rule detects a suspicious crash of the Microsoft Malware Protection Engine",
-  "tactic": "Defense Evasion",
+  "channel": "process_creation",
+  "description": "Detects renamed Visual Studio Code tunnel execution. Attackers can abuse this functionality to establish a C2 channel",
+  "tactic": "Command And Control",
   "technique": [
-    "t1211",
-    "t1562.001"
+    "t1071.001"
   ],
   "fields": {
-    "selection": {
-      "Provider_Name": "Application Error",
-      "EventID": 1000,
-      "Data|contains|all": [
-        "MsMpEng.exes",
-        "mpengine.dllss"
-      ],
-      "hashes": [
-        "c4d3f8b7e0f2a1b5c6d8e9f0a1b2c3d4"
+    "selection_image_only_tunnel": {
+      "OriginalFileName": null,
+      "CommandLine|endswith": ".exe tunnel"
+    },
+    "selection_image_tunnel_args": {
+      "CommandLine|contains|all": [
+        ".exe tunnel",
+        "--name ",
+        "--accept-server-license-terms"
+      ]
+    },
+    "selection_image_tunnel_service": {
+      "CommandLine|contains|all": [
+        "tunnel ",
+        "service",
+        "internal-run",
+        "tunnel-service.log"
+      ]
+    },
+    "selection_parent_tunnel": {
+      "ParentCommandLine|endswith": " tunnel",
+      "Image|endswith": "\\cmd.exe",
+      "CommandLine|contains|all": [
+        "/d /c ",
+        "\\servers\\Stable-",
+        "code-server.cmd"
+      ]
+    },
+    "filter_main_parent_code": {
+      "ParentImage|endswith": [
+        "\\code-tunnel.exe",
+        "\\code.exe"
+      ]
+    },
+    "filter_main_image_code": {
+      "Image|endswith": [
+        "\\code-tunnel.exe",
+        "\\code.exe"
       ]
     }
   },
   "fieldguidance": {
-    "selection": {
-      "Data contains all of": [
-        "MsMpEng.exes",
-        "mpengine.dllss"
+    "selection_image_only_tunnel": {
+      "CommandLine ends with": [
+        ".exe tunnel"
+      ]
+    },
+    "selection_image_tunnel_args": {
+      "CommandLine contains all of": [
+        ".exe tunnel",
+        "--name ",
+        "--accept-server-license-terms"
+      ]
+    },
+    "selection_image_tunnel_service": {
+      "CommandLine contains all of": [
+        "tunnel ",
+        "service",
+        "internal-run",
+        "tunnel-service.log"
+      ]
+    },
+    "selection_parent_tunnel": {
+      "ParentCommandLine ends with": [
+        " tunnel"
+      ],
+      "Image ends with": [
+        "\\cmd.exe"
+      ],
+      "CommandLine contains all of": [
+        "/d /c ",
+        "\\servers\\Stable-",
+        "code-server.cmd"
+      ]
+    },
+    "filter_main_parent_code": {
+      "ParentImage ends with": [
+        "\\code-tunnel.exe",
+        "\\code.exe"
+      ]
+    },
+    "filter_main_image_code": {
+      "Image ends with": [
+        "\\code-tunnel.exe",
+        "\\code.exe"
       ]
     }
   },
-  "message": "Event from provider: Application Error | Log references: MsMpEng.exes, mpengine.dllss",
-  "condition": "selection"
+  "message": "Original file name: None | Command executed: .exe tunnel | Command executed: .exe tunnel, --name  | Command executed: tunnel , service | Executable loaded: \\cmd.exe | Command executed: /d /c , \\servers\\Stable- | Parent process: \\code-tunnel.exe, \\code.exe | Executable loaded: \\code-tunnel.exe, \\code.exe",
+  "condition": "(1 of selection_image_* and not 1 of filter_main_image_*) or (selection_parent_tunnel and not 1 of filter_main_parent_*)"
 }

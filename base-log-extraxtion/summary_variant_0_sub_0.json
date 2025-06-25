@@ -1,25 +1,28 @@
 {
-  "channel": "application",
-  "description": "This rule detects a suspicious crash of the Microsoft Malware Protection Engine",
+  "channel": "process_creation",
+  "description": "Detects renamed Visual Studio Code tunnel execution. Attackers can abuse this functionality to establish a C2 channel",
   "fields": {
-    "selection": {
-      "Provider_Name": "Application Error",
-      "EventID": 1000,
-      "Data|contains|all": [
-        "MsMpEng.exes",
-        "mpengine.dllss"
-      ],
-      "hashes": "c4d3f8b7e0f2a1b5c6d8e9f0a1b2c3d4"
-    }
-  },
-  "fieldguidance": {
-    "selection": {
-      "Data contains all of": [
-        "MsMpEng.exes",
-        "mpengine.dllss"
+    "selection_parent_tunnel": {
+      "ParentCommandLine|endswith": " tunnel",
+      "Image|endswith": "\\cmd.exe",
+      "CommandLine|contains|all": [
+        "/d /c ",
+        "\\servers\\Stable-",
+        "code-server.cmd"
       ]
     }
   },
-  "message": "Event from provider: Application Error | Log references: MsMpEng.exes, mpengine.dllss",
-  "condition": "selection"
+  "fieldguidance": {
+    "selection_parent_tunnel": {
+      "ParentCommandLine ends with": " tunnel",
+      "Image ends with": "\\cmd.exe",
+      "CommandLine contains all of": [
+        "/d /c ",
+        "\\servers\\Stable-",
+        "code-server.cmd"
+      ]
+    }
+  },
+  "message": "Executable loaded: \\cmd.exe | Command executed: /d /c , \\servers\\Stable-",
+  "condition": "selection_parent_tunnel"
 }

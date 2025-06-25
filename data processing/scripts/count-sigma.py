@@ -98,7 +98,7 @@ def extract_full_compositions(file_path):
 def scan_folder_for_full_compositions(directory):
     all_compositions = {}
     exclude_suffixes = (
-        '|re', '|contains', '| contains', '|all', '|endswith', '|startswith'
+        '|re' , '|endswith', '|startswith'
     )
     for root, _, files in os.walk(directory):
         for file in files:
@@ -109,6 +109,32 @@ def scan_folder_for_full_compositions(directory):
                     if not any(comp.endswith(suffix) for suffix in exclude_suffixes):
                         all_compositions[comp] = all_compositions.get(comp, 0) + count
     return all_compositions
+
+
+
+def find_first_file_with_two_data_contains_all(directory):
+    i=0
+    j=0 
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.yaml') or file.endswith('.yml'):
+                file_path = os.path.join(root, file)
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        # Count occurrences of 'data|contains|all'
+                        count = content.count('CommandLine|contains|all')
+                        if count >= 2:
+                            j=j+ 1
+                            with open("files_with_two_or_more_CommandLine_contains_all.txt", "a", encoding="utf-8") as out_file:
+                                out_file.write(file_path + "\n")
+                        elif count == 1:
+                            i=i+ 1
+                except Exception as e:
+                    print(f"❌ Error reading {file_path}: {e}")
+    print(i)
+    print(j)
+    return None
 
 # --- USAGE ---
 folder_path = r"C:\Users\AHMED\Desktop\new-approch\sigma\rules\windows"  # Update path if needed
@@ -142,3 +168,11 @@ print(f"\n🧩 Full compositions found:")
 compositions = scan_folder_for_full_compositions(folder_path)
 for comp, count in sorted(compositions.items(), key=lambda x: x[1], reverse=True):
     print(f" - {comp}: {count} times")
+
+print("------------------------------------------------------------------")
+print("\n🔍 Searching for first file with two 'CommandLine|contains|all:' mentions..." )
+first_file = find_first_file_with_two_data_contains_all(folder_path)
+if first_file:
+    print(f"✅ Found: {first_file}")    
+else:
+    print("❌ No file found  with two 'CommandLine|contains|all:' mentions.")
