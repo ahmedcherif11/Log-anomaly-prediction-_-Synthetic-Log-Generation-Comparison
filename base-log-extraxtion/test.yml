@@ -1,0 +1,84 @@
+title: Dual 1-of AND Test
+id: d1e2f3a4-b5c6-7d8e-9a0b-c1d2e3f4g5h6
+related:
+    - id: 6c82cf5c-090d-4d57-9188-533577631108
+      type: similar
+description: Test rule for two '1 of' groups in condition.
+logsource:
+  category: process_creation
+detection:
+  selection_a_1:
+    Image|endswith: '\\test1.exe'
+  selection_a_2:
+    Image|endswith: '\\test2.exe'
+  selection_b_1:
+    CommandLine|contains: 'malware'
+  selection_c_1:
+    ParentImage|endswith: 'cmd.exe'
+  selection_d_1:
+    TargetImage|endswith: 'svchost.exe'
+  selection_d_2:
+    TargetImage|endswith: 'services.exe'
+  selection_e_1:
+    Image|endswith: 'notepad.exe'
+  selection_x_1:
+    CommandLine|contains: 'powershell'
+  selection_y_1:
+    CommandLine|contains: 'invoke'
+  selection_z_1:
+    Image|endswith: 'bad.exe'
+  filter_foo:
+    CommandLine|contains: 'foobar'
+  filter_bar_1:
+    CommandLine|contains: 'bar'
+  filter_network_1:
+    Image|endswith: 'tcpip.sys'
+  filter_proc_1:
+    Image|endswith: 'lsass.exe'
+  filter_registry_1:
+    Data|contains: 'HKEY_LOCAL_MACHINE'
+  sel_a_1:
+    CommandLine|contains: 
+            - 'python'
+            - 'perl'
+
+  sel_b_1:
+    CommandLine|contains: 
+      - 'java'
+      - 'nodejs'
+  sel_b_2:
+    CommandLine|contains: 'node'
+  sel_c_1:
+    CommandLine|contains: 'ruby'
+  sel_d_1:
+    Image|endswith: 'perl.exe'
+  sel_e_2:
+    Image|endswith: 'lua.exe'
+  selection_f_1:
+    Image|endswith: 'foo.exe'
+  selection_g_1:
+    Image|endswith: 'bar.exe'
+  selection_h_1:
+    Image|endswith: 'baz.exe'
+  selection_i_1:
+    Image|endswith: 'qux.exe'
+  selection_j_1:
+    Image|endswith: 'quux.exe'
+  exclude_a_1:
+    Data|contains: 'temp'
+  require_b_1:
+    Data|contains: 'system32'
+  x_1:
+    CommandLine|contains: 'curl'
+  y_1:
+    CommandLine|contains:  'wget'
+  z_1:
+    CommandLine|contains: 'scp'
+  filter_k:
+    CommandLine|contains: 'disable'
+  condition: 
+    (1 of sel_a_* and (all of sel_b_* or (not sel_c_1 and (1 of sel_d_* or 1 of  selection_d_* ))))
+
+falsepositives:
+    - MsMpEng might crash if the "C:\" partition is full
+level: high

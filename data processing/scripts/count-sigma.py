@@ -136,6 +136,22 @@ def find_first_file_with_two_data_contains_all(directory):
     print(j)
     return None
 
+def find_condition_one_of_pattern(file_path):
+    """
+    Checks if the YAML file contains a condition in the pattern:
+    '1 of ... and 1 of ...'
+    Returns True if found, False otherwise.
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+            # Look for a line like: condition: 1 of ... and 1 of ...
+            pattern = r'condition:\s* [^:]+and ([^\n]+or[^\n]+)'
+            if re.search(pattern, content):
+                return True
+    except Exception as e:
+        print(f"❌ Error reading {file_path}: {e}")
+    return False
 # --- USAGE ---
 folder_path = r"C:\Users\AHMED\Desktop\new-approch\sigma\rules\windows"  # Update path if needed
 techniques, phrase_count ,count_end,count_start= analyze_yaml_folder(folder_path)
@@ -143,36 +159,47 @@ fields_before_contains,fields_before_endwith, fields_before_startswith= scan_fol
 
 
 # --- OUTPUT ---
-print(f"\n✅ Total unique MITRE techniques found: {len(techniques)}")
-for t in sorted(techniques):
-    print(f" - {t}")
+# print(f"\n✅ Total unique MITRE techniques found: {len(techniques)}")
+# for t in sorted(techniques):
+#     print(f" - {t}")
 
-print(f"\n🔍 Total times 'contains:' was mentioned: {phrase_count}")
-print(f"\n🔍 Total times 'endswith:' was mentioned: {count_end}")
-print(f"\n🔍 Total times 'startswith:' was mentioned: {count_start}")
-print("------------------------------------------------------------------")
-print(f"\n🧠 Unique fields mentioned before '|contains': {len(fields_before_contains)}")
-for field in sorted(fields_before_contains):
-    print(f" - {field}")
-print("------------------------------------------------------------------")
-print(f"\n🧠 Unique fields mentioned before '|endswith': {len(fields_before_endwith)}")
-for field in sorted(fields_before_endwith):
-    print(f" - {field}")
-print("------------------------------------------------------------------")
-print(f"\n🧠 Unique fields mentioned before '|startswith': {len(fields_before_startswith)}")
-for field in sorted(fields_before_startswith):
-    print(f" - {field}")
+# print(f"\n🔍 Total times 'contains:' was mentioned: {phrase_count}")
+# print(f"\n🔍 Total times 'endswith:' was mentioned: {count_end}")
+# print(f"\n🔍 Total times 'startswith:' was mentioned: {count_start}")
+# print("------------------------------------------------------------------")
+# print(f"\n🧠 Unique fields mentioned before '|contains': {len(fields_before_contains)}")
+# for field in sorted(fields_before_contains):
+#     print(f" - {field}")
+# print("------------------------------------------------------------------")
+# print(f"\n🧠 Unique fields mentioned before '|endswith': {len(fields_before_endwith)}")
+# for field in sorted(fields_before_endwith):
+#     print(f" - {field}")
+# print("------------------------------------------------------------------")
+# print(f"\n🧠 Unique fields mentioned before '|startswith': {len(fields_before_startswith)}")
+# for field in sorted(fields_before_startswith):
+#     print(f" - {field}")
 
-print("------------------------------------------------------------------")
-print(f"\n🧩 Full compositions found:")
-compositions = scan_folder_for_full_compositions(folder_path)
-for comp, count in sorted(compositions.items(), key=lambda x: x[1], reverse=True):
-    print(f" - {comp}: {count} times")
+# print("------------------------------------------------------------------")
+# print(f"\n🧩 Full compositions found:")
+# compositions = scan_folder_for_full_compositions(folder_path)
+# for comp, count in sorted(compositions.items(), key=lambda x: x[1], reverse=True):
+#     print(f" - {comp}: {count} times")
 
+# print("------------------------------------------------------------------")
+# print("\n🔍 Searching for first file with two 'CommandLine|contains|all:' mentions..." )
+# first_file = find_first_file_with_two_data_contains_all(folder_path)
+# if first_file:
+#     print(f"✅ Found: {first_file}")    
+# else:
+#     print("❌ No file found  with two 'CommandLine|contains|all:' mentions.")
+i = 0
 print("------------------------------------------------------------------")
-print("\n🔍 Searching for first file with two 'CommandLine|contains|all:' mentions..." )
-first_file = find_first_file_with_two_data_contains_all(folder_path)
-if first_file:
-    print(f"✅ Found: {first_file}")    
-else:
-    print("❌ No file found  with two 'CommandLine|contains|all:' mentions.")
+print("\n🔍 Searching for '1 of ... and 1 of ...' condition patterns..."    )
+for root, _, files in os.walk(folder_path):
+    for file in files:
+        if file.endswith('.yaml') or file.endswith('.yml'):
+            file_path = os.path.join(root, file)
+            if find_condition_one_of_pattern(file_path):
+                print(f"✅ Found condition pattern in: {file_path}")
+                i= i + 1
+print(f"Total files with '1 of ... and 1 of ...' condition patterns: {i}")

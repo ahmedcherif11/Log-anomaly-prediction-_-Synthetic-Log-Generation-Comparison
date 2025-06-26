@@ -156,7 +156,6 @@ class SigmaSummaryGenerator:
     def parse_condition(self, condition, selection_blocks):
         import re
 
-        # Helper: expand wildcards
         def expand_blocks(pattern, blocks):
             if '*' in pattern:
                 regex = re.compile(pattern.replace('*', '.*'))
@@ -164,60 +163,307 @@ class SigmaSummaryGenerator:
             else:
                 return [pattern] if pattern in blocks else []
 
-        # Find 'and ( ... or ... )' group
-        m = re.match(r'(.+?)\s+and\s+\((.+)\)', condition)
-        if m:
-            left, right_group = m.groups()
-            left = left.strip()
-            fixed_blocks = expand_blocks(left, selection_blocks)
-            or_blocks = []
-            for branch in re.split(r'\s+or\s+', right_group):
-                branch = branch.strip()
-                if branch.startswith('all of'):
-                    blocks = branch.replace('all of', '').strip()
-                    all_of = expand_blocks(blocks, selection_blocks)
-                    or_blocks.append({'all_of': all_of})
-                elif branch.startswith('1 of'):
-                    blocks = branch.replace('1 of', '').strip()
-                    one_of = expand_blocks(blocks, selection_blocks)
-                    or_blocks.append({'one_of': one_of})
-                # You can add more logic for 'none of' or other cases as needed
-            return fixed_blocks, or_blocks, []
+        def split_condition_on_top_level_and(cond):
+            stack = []
+            last = 0
+            result = []
+            i = 0
+            while i < len(cond):
+                if cond[i] == '(':
+                    stack.append(i)
+                    i += 1
+                elif cond[i] == ')':
+                    if stack:
+                        stack.pop()
+                    i += 1
+                elif cond[i:i+3] == 'and' and not stack:
+                    before = i == 0 or cond[i-1].isspace()
+                    after = (i+3 == len(cond)) or cond[i+3].isspace()
+                    if before and after:
+                        result.append(cond[last:i].strip())
+                        last = i+3
+                        i += 3
+                    else:
+                        i += 1
+                else:
+                    i += 1
+            result.append(cond[last:].strip())
+            return result
+
+        def split_condition_on_top_level_or(cond):
+            stack = []
+            last = 0
+            result = []
+            i = 0
+            while i < len(cond):
+                if cond[i] == '(':
+                    stack.append(i)
+                    i += 1
+                elif cond[i] == ')':
+                    if stack:
+                        stack.pop()
+                    i += 1
+                elif cond[i:i+2] == 'or' and not stack:
+                    before = i == 0 or cond[i-1].isspace()
+                    after = (i+2 == len(cond)) or cond[i+2].isspace()
+                    if before and after:
+                        result.append(cond[last:i].strip())
+                        last = i+2
+                        i += 2
+                    else:
+                        i += 1
+                else:
+                    i += 1
+            result.append(cond[last:].strip())
+            return result
+
+        # ---- Recursive handling starts here ----
+
+        # If the condition is wrapped in parentheses, unwrap it
+        cond = condition.strip()
+        if cond.startswith('(') and cond.endswith(')'):
+            cond = cond[1:-1].strip()
+
+        # If top-level ORs, process each branch and return as separate combos
+        or_groups = split_condition_on_top_level_or(cond)
+        if len(or_groups) > 1:
+            # Collect all combinations from all OR branches
+            all_fixed, all_variable, all_excluded = [], [], []
+            for g in or_groups:
+                fixed, var, excl = self.parse_condition(g, selection_blocks)
+                all_fixed.append(fixed)
+                all_variable.append(var)
+                all_excluded.append(excl)
+            # Each OR branch is a separate variant, handled in your main loop.
+            # So just return as a list of "variants"
+            # To be compatible with the rest of your code, flatten the results:
+            # (Assuming you process each OR group separately later)
+            # For now, just return the first as fixed/variable, others as separate.
+            # You may need to adapt handle_variable_blocks to enumerate these combos!
+            # Return lists-of-lists to indicate variants
+            return all_fixed, all_variable, all_excluded
+
+        # If not, split on AND and process each part
+        and_groups = split_condition_on_top_level_and(cond)
+        variable_blocks = []
+        fixed_blocks = []
+        excluded_blocks = []
+
+        # If any group inside AND is itself a ( ... or ... ), recurse!
+        for token in and_groups:
+            token = token.strip()
+            if token.startswith('(') and token.endswith(')') and 'or' in token:
+                # Recursively parse this OR group, producing all variants
+                inner_fixed, inner_var, inner_excl = self.parse_condition(token[1:-1], selection_blocks)
+                # Each branch is a variant, so for each, pair with rest of AND (cross product logic needed in main loop!)
+                # We'll return these as lists-of-lists, and the calling code must expand them
+                fixed_blocks.append(inner_fixed)
+                variable_blocks.append(inner_var)
+                excluded_blocks.append(inner_excl)
+            else:
+                # Handle normal (not ...) and variable/one_of/all_of
+                if token.lower().startswith('not '):
+                    not_matches = re.findall(r'not\s+(?:1 of|all of)?\s*([\w\*]+)', token)
+                    for n in not_matches:
+                        excluded_blocks.extend(expand_blocks(n, selection_blocks))
+                    continue
+                m_one_of = re.match(r'1 of\s+(.+)', token)
+                if m_one_of:
+                    one_of_pattern = m_one_of.group(1).strip()
+                    variable_blocks.append({'one_of': expand_blocks(one_of_pattern, selection_blocks)})
+                    continue
+                m_all_of = re.match(r'all of\s+(.+)', token)
+                if m_all_of:
+                    all_of_pattern = m_all_of.group(1).strip()
+                    variable_blocks.append({'all_of': expand_blocks(all_of_pattern, selection_blocks)})
+                    continue
+                # Otherwise, treat as fixed block
+                blocks = expand_blocks(token, selection_blocks)
+                fixed_blocks.extend(blocks)
+
+        # Remove excluded from fixed and variable
+        fixed_blocks = [b for b in fixed_blocks if b not in excluded_blocks]
+        for vb in variable_blocks:
+            if isinstance(vb, dict):
+                for k in vb:
+                    vb[k] = [b for b in vb[k] if b not in excluded_blocks]
+
+        return fixed_blocks, variable_blocks, excluded_blocks
+
+
+    @staticmethod
+    def split_condition_on_top_level_and(condition):
+        # Splits on 'and' that are not inside parentheses
+        cond = condition
+        stack = []
+        last = 0
+        result = []
+        i = 0
+        while i < len(cond):
+            if cond[i] == '(':
+                stack.append(i)
+                i += 1
+            elif cond[i] == ')':
+                if stack:
+                    stack.pop()
+                i += 1
+            elif cond[i:i+3] == 'and' and not stack:
+                before = i == 0 or cond[i-1].isspace()
+                after = (i+3 == len(cond)) or cond[i+3].isspace()
+                if before and after:
+                    result.append(cond[last:i].strip())
+                    last = i+3
+                    i += 3
+                else:
+                    i += 1
+            else:
+                i += 1
+        result.append(cond[last:].strip())
+        return result
+
+        
+    @staticmethod
+    def split_condition_on_top_level_or(condition):
+        # Splits on 'or' that are not inside parentheses
+        cond = condition
+        stack = []
+        last = 0
+        result = []
+        i = 0
+        while i < len(cond):
+            if cond[i] == '(':
+                stack.append(i)
+                i += 1
+            elif cond[i] == ')':
+                if stack:
+                    stack.pop()
+                i += 1
+            elif cond[i:i+2] == 'or' and not stack:
+                # Only split if surrounded by whitespace (not part of a word)
+                before = i == 0 or cond[i-1].isspace()
+                after = (i+2 == len(cond)) or cond[i+2].isspace()
+                if before and after:
+                    result.append(cond[last:i].strip())
+                    last = i+2
+                    i += 2
+                else:
+                    i += 1
+            else:
+                i += 1
+        result.append(cond[last:].strip())
+        return result
+
+    def parse_condition_tree(self, condition, selection_blocks):
+
+        import re
+
+        # Remove outer parentheses
+        condition = condition.strip()
+        while condition.startswith('(') and condition.endswith(')'):
+            # Only remove if parentheses match
+            stack = 0
+            for i, c in enumerate(condition):
+                if c == '(': stack += 1
+                if c == ')': stack -= 1
+                if stack == 0 and i < len(condition) - 1: break
+            else:
+                condition = condition[1:-1].strip()
+                continue
+            break
+
+        # Split top-level OR
+        or_groups = self.split_condition_on_top_level_or(condition)
+        if len(or_groups) > 1:
+            return {'or': [self.parse_condition_tree(group, selection_blocks) for group in or_groups]}
+
+        # Split top-level AND
+        and_groups = self.split_condition_on_top_level_and(condition)
+        if len(and_groups) > 1:
+            return {'and': [self.parse_condition_tree(group, selection_blocks) for group in and_groups]}
+
+        # Handle "not"
+        if condition.lower().startswith("not "):
+            return {'not': self.parse_condition_tree(condition[4:].strip(), selection_blocks)}
+
+        # Handle "1 of" or "all of"
+        m_one = re.match(r'1 of\s+(.+)', condition)
+        if m_one:
+            pattern = m_one.group(1).strip()
+            return {'one_of': self.expand_blocks(pattern, selection_blocks)}
+        m_all = re.match(r'all of\s+(.+)', condition)
+        if m_all:
+            pattern = m_all.group(1).strip()
+            return {'all_of': self.expand_blocks(pattern, selection_blocks)}
+
+        # Otherwise, treat as block or wildcard
+        expanded = self.expand_blocks(condition, selection_blocks)
+        if len(expanded) == 1:
+            return expanded[0]
+        elif len(expanded) > 1:
+            return {'all_of': expanded}
         else:
-            # fallback: flat case, works like before
-            tokens = re.findall(r'[\w\*]+(?:_[\w\*]+)*\*?', condition)
-            keywords = {'and', 'or', 'not', '1', 'of', 'all', 'none'}
-            block_tokens = [ t for t in tokens if t.lower() not in keywords ]
+            return condition  # fallback
 
-            expanded_blocks = []
-            for token in block_tokens:
-                expanded_blocks.extend(expand_blocks(token, selection_blocks))
-            expanded_blocks = list(set(expanded_blocks))
+    def expand_blocks(self, pattern, blocks):
+        import re
+        if '*' in pattern:
+            regex = re.compile(pattern.replace('*', '.*'))
+            return [b for b in blocks if regex.fullmatch(b)]
+        else:
+            return [pattern] if pattern in blocks else []
 
-            excluded_blocks = []
-            if 'not' in condition:
-                not_matches = re.findall(r'not\s+(?:1 of|all of)?\s*([\w\*]+)', condition)
-                for n in not_matches:
-                    excluded_blocks.extend(expand_blocks(n, selection_blocks))
+    def expand_condition_tree(self, tree):
+        """
+        Expand a condition tree into a list of combinations (each combination is a list of block names).
+        """
+        if isinstance(tree, str):
+            return [[tree]]
+        if isinstance(tree, list):
+            # treat as AND of all
+            combos = [[]]
+            for subtree in tree:
+                subcombos = self.expand_condition_tree(subtree)
+                new_combos = []
+                for c in combos:
+                    for sc in subcombos:
+                        new_combos.append(c + sc)
+                combos = new_combos
+            return combos
+        if isinstance(tree, dict):
+            if 'or' in tree:
+                combos = []
+                for option in tree['or']:
+                    combos.extend(self.expand_condition_tree(option))
+                return combos
+            elif 'and' in tree:
+                combos = [[]]
+                for part in tree['and']:
+                    part_combos = self.expand_condition_tree(part)
+                    new_combos = []
+                    for c in combos:
+                        for pc in part_combos:
+                            new_combos.append(c + pc)
+                    combos = new_combos
+                return combos
+            elif 'not' in tree:
+                # 'not' is tricky: we return an empty list (don't expand these blocks)
+                return [[]]
+            elif 'one_of' in tree:
+                return [[block] for block in tree['one_of']]
+            elif 'all_of' in tree:
+                return [tree['all_of']]
+        return [[]]
 
-            included_blocks = [ b for b in expanded_blocks if b not in excluded_blocks ]
-            variable_blocks = []
-            fixed_blocks = []
-
-            if '1 of' in condition:
-                one_of_matches = re.findall(r'1 of\s*([\w\*]+)', condition)
-                for token in one_of_matches:
-                    variable_blocks.extend(expand_blocks(token, included_blocks))
-
-            fixed_blocks = [ b for b in included_blocks if b not in variable_blocks ]
-
-            # No OR branch, just AND/1-of
-            return fixed_blocks, [{'one_of': variable_blocks}] if variable_blocks else [], excluded_blocks
         
     def handle_variable_blocks(self, condition, variable_blocks, fixed_blocks, selection_blocks, rule):
         result_base_logs = []
-        if '1 of' in condition and not 'not 1 of' in condition and variable_blocks:
+        print(f"Handling condition: {condition}")
+        print(f"Variable blocks: {variable_blocks}, Fixed blocks: {fixed_blocks}")
+
+        if re.search(r'(?<!not\s)1 of', condition) and variable_blocks:
             for block in variable_blocks:
+                print(f"Expanding variable_blocks: {variable_blocks}")
+                print(f"Available selection_blocks: {list(selection_blocks.keys())}")
                 block_value = selection_blocks.get(block, {})
                 single_log = {
                     'channel': rule.get('logsource', {}).get('service') or rule.get('logsource', {}).get('category', 'unknown'),
@@ -245,7 +491,7 @@ class SigmaSummaryGenerator:
                     single_log['condition'] = ' and '.join([block] + fixed_blocks)
 
                 result_base_logs.append(single_log)
-        elif 'all of' in condition and not 'not all of' in condition:
+        elif  re.search(r'(?<!not\s)all of', condition) :
             base_log = {
                 'channel': rule.get('logsource', {}).get('service') or rule.get('logsource', {}).get('category', 'unknown'),
                 'description': rule.get('description', ''),
@@ -287,7 +533,6 @@ class SigmaSummaryGenerator:
         return result_base_logs
     
 
-
     def generate_base_logs_from_condition(self):
         with open(self.input_path, 'r', encoding='utf-8') as f:
             rule = yaml.safe_load(f)
@@ -296,51 +541,41 @@ class SigmaSummaryGenerator:
         condition = detection.get('condition', '')
         print(f"Processing detection condition: {condition}")
 
-        # Step 1: collect all available selection block names
         selection_blocks = { key: value for key, value in detection.items() if key != 'condition' }
-        fixed_blocks= []
-        variable_blocks1 = []
-        excluded_blocks = []
         if not condition:
             print("No condition found in the rule. Cannot generate base logs.")
             return []   
-        # Step 2: parse the condition to identify included, excluded, fixed, and variable blocks
-        fixed_blocks, variable_blocks1, excluded_blocks = self.parse_condition(condition, selection_blocks)
-        fixed_blocks1 = fixed_blocks.copy()  # Keep a copy of fixed blocks for later use
-        print(fixed_blocks, variable_blocks1, excluded_blocks)
-        # Step 3: determine which blocks to include in the base log
+
+        # NEW: Parse the tree and expand all combinations!
+        cond_tree = self.parse_condition_tree(condition, selection_blocks)
+        print("Parsed condition tree:", cond_tree)
+
+        all_combos = self.expand_condition_tree(cond_tree)
+        print("All expanded combinations:", all_combos)
+
         result_base_logs = []
-
-        for block in variable_blocks1: 
-            print(f"Processing variable block: {block}") 
-
-            if 'all_of' in block:
-                fixed_blocks.extend(block['all_of'])
-                print(f"Adding fixed blocks from 'all_of': {block['all_of']}")
-                print(f"Current fixed blocks: {fixed_blocks}")
-                variable_blocks = []
-            elif 'one_of' in block:
-                fixed_blocks = fixed_blocks1.copy()  # Reset fixed blocks to original
-                variable_blocks = block['one_of']
-                print(f"Variable blocks from 'one_of': {variable_blocks}")
-                print(f"Current variable blocks: {variable_blocks}")
-            else:
-                fixed_blocks = fixed_blocks1.copy()
-            print(fixed_blocks, variable_blocks, excluded_blocks)
-            # Step 4: generate combinations
-
-            result_base_logs.extend(
-                self.handle_variable_blocks(condition, variable_blocks, fixed_blocks, selection_blocks, rule)
-            )
-        if not variable_blocks1 :
-            result_base_logs.extend(
-                self.handle_variable_blocks(condition, [], fixed_blocks1, selection_blocks, rule)
-            )
-
-  
-        
-
+        for combo in all_combos:
+            fields = {}
+            fieldguidance = {}
+            message_parts = []
+            for block in combo:
+                block_value = selection_blocks.get(block, {})
+                fields[block] = block_value
+                guidance, message = self.generate_field_guidance_and_message(block_value)
+                fieldguidance[block] = guidance
+                if message:
+                    message_parts.append(message)
+            base_log = {
+                'channel': rule.get('logsource', {}).get('service') or rule.get('logsource', {}).get('category', 'unknown'),
+                'description': rule.get('description', ''),
+                'fields': fields,
+                'fieldguidance': fieldguidance,
+                'message': " | ".join(message_parts),
+                'condition': " and ".join(combo)
+            }
+            result_base_logs.append(base_log)
         return result_base_logs
+
     
     def generate_sub_variants(self, base_log):
         import itertools
