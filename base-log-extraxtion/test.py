@@ -234,13 +234,7 @@ class SigmaSummaryGenerator:
                 all_fixed.append(fixed)
                 all_variable.append(var)
                 all_excluded.append(excl)
-            # Each OR branch is a separate variant, handled in your main loop.
-            # So just return as a list of "variants"
-            # To be compatible with the rest of your code, flatten the results:
-            # (Assuming you process each OR group separately later)
-            # For now, just return the first as fixed/variable, others as separate.
-            # You may need to adapt handle_variable_blocks to enumerate these combos!
-            # Return lists-of-lists to indicate variants
+
             return all_fixed, all_variable, all_excluded
 
         # If not, split on AND and process each part
@@ -256,7 +250,7 @@ class SigmaSummaryGenerator:
                 # Recursively parse this OR group, producing all variants
                 inner_fixed, inner_var, inner_excl = self.parse_condition(token[1:-1], selection_blocks)
                 # Each branch is a variant, so for each, pair with rest of AND (cross product logic needed in main loop!)
-                # We'll return these as lists-of-lists, and the calling code must expand them
+                # return these as lists-of-lists, and the calling code must expand them
                 fixed_blocks.append(inner_fixed)
                 variable_blocks.append(inner_var)
                 excluded_blocks.append(inner_excl)
@@ -468,6 +462,8 @@ class SigmaSummaryGenerator:
                 single_log = {
                     'channel': rule.get('logsource', {}).get('service') or rule.get('logsource', {}).get('category', 'unknown'),
                     'description': rule.get('description', ''),
+                    'tactic': rule.get('tactic', ''),
+                    'technique': rule.get('technique', []),
                     'fields': { block: block_value },
                     'fieldguidance': {},
                     'message': '',
@@ -495,6 +491,8 @@ class SigmaSummaryGenerator:
             base_log = {
                 'channel': rule.get('logsource', {}).get('service') or rule.get('logsource', {}).get('category', 'unknown'),
                 'description': rule.get('description', ''),
+                'tactic': rule.get('tactic', ''),
+                'technique': rule.get('technique', []),
                 'fields': {},
                 'fieldguidance': {},
                 'message': '',
@@ -515,6 +513,8 @@ class SigmaSummaryGenerator:
             base_log = {
                 'channel': rule.get('logsource', {}).get('service') or rule.get('logsource', {}).get('category', 'unknown'),
                 'description': rule.get('description', ''),
+                'tactic': rule.get('tactic', ''),
+                'technique': rule.get('technique', []),
                 'fields': {},
                 'fieldguidance': {},
                 'message': '',
@@ -534,9 +534,32 @@ class SigmaSummaryGenerator:
     
 
     def generate_base_logs_from_condition(self):
+
         with open(self.input_path, 'r', encoding='utf-8') as f:
             rule = yaml.safe_load(f)
+                # Extract tags, tactic, and technique
+        summary = {}
+        tags = rule.get('tags', [])
 
+        # Extract tactic (first tag starting with 'attack.' and not 'attack.t')
+        tactic = None
+        for tag in tags:
+            if tag.startswith('attack.') and not tag.startswith('attack.t'):
+                if 'tactic' not in summary:
+                    summary['tactic'] = []
+                summary['tactic'].append(tag.replace('attack.', '').replace('-', ' ').title())
+        if 'tactic' in summary and len(summary['tactic']) == 1:
+            summary['tactic'] = summary['tactic'][0]
+        if tactic:
+            summary['tactic'] = tactic
+
+        # Extract techniques (all tags starting with 'attack.t')
+        techniques = []
+        for tag in tags:
+            if tag.startswith('attack.t'):
+                techniques.append(tag.replace('attack.', ''))
+        if techniques:
+            summary['technique'] = techniques
         detection = rule.get('detection', {})
         condition = detection.get('condition', '')
         print(f"Processing detection condition: {condition}")
@@ -568,6 +591,8 @@ class SigmaSummaryGenerator:
             base_log = {
                 'channel': rule.get('logsource', {}).get('service') or rule.get('logsource', {}).get('category', 'unknown'),
                 'description': rule.get('description', ''),
+                'tactic':  summary['tactic'],
+                'technique': techniques,
                 'fields': fields,
                 'fieldguidance': fieldguidance,
                 'message': " | ".join(message_parts),
@@ -653,6 +678,8 @@ class SigmaSummaryGenerator:
             variant = {
                 'channel': base_log.get('channel', ''),
                 'description': base_log.get('description', ''),
+                'tactic': base_log.get('tactic', ''),
+                'technique': base_log.get('technique', []),
                 'fields': fields_dict,
                 'fieldguidance': fg_dict,
                 'message': message,

@@ -4,6 +4,10 @@ related:
     - id: 6c82cf5c-090d-4d57-9188-533577631108
       type: similar
 description: Test rule for two '1 of' groups in condition.
+tags:
+    - attack.defense-evasion
+    - attack.t1211
+    - attack.t1562.001
 logsource:
   category: process_creation
 detection:
@@ -77,7 +81,7 @@ detection:
   filter_k:
     CommandLine|contains: 'disable'
   condition: 
-    (1 of sel_a_* and (all of sel_b_* or (not sel_c_1 and (1 of sel_d_* or 1 of  selection_d_* ))))
+    selection_f_1  and selection_j_1
 
 falsepositives:
     - MsMpEng might crash if the "C:\" partition is full
