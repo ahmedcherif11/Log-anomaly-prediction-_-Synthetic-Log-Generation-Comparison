@@ -113,28 +113,70 @@ def scan_folder_for_full_compositions(directory):
 
 
 def find_first_file_with_two_data_contains_all(directory):
-    i=0
-    j=0 
+    """
+    Finds all files where 'CommandLine|contains|all' appears 2 or more times in the same block.
+    A 'block' is defined as a YAML dictionary (e.g., under the same key).
+    Saves all such file paths to 'files_with_two_or_more_CommandLine_contains_all.txt'.
+    """
+
+    files_with_matches = []
+
     for root, _, files in os.walk(directory):
         for file in files:
             if file.endswith('.yaml') or file.endswith('.yml'):
                 file_path = os.path.join(root, file)
                 try:
                     with open(file_path, 'r', encoding='utf-8') as f:
-                        content = f.read()
-                        # Count occurrences of 'data|contains|all'
-                        count = content.count('CommandLine|contains|all')
-                        if count >= 2:
-                            j=j+ 1
-                            with open("files_with_two_or_more_CommandLine_contains_all.txt", "a", encoding="utf-8") as out_file:
-                                out_file.write(file_path + "\n")
-                        elif count == 1:
-                            i=i+ 1
+                        try:
+                            doc = yaml.safe_load(f)
+                        except Exception as e:
+                            print(f"❌ YAML parse error in {file_path}: {e}")
+                            continue
+                        if not isinstance(doc, dict):
+                            continue
+                        # Recursively search for blocks with 2+ 'CommandLine|contains|all'
+                        def count_in_block(block):
+                            count = 0
+                            if isinstance(block, dict):
+                                for v in block.values():
+                                    count += count_in_block(v)
+                            elif isinstance(block, list):
+                                for item in block:
+                                    count += count_in_block(item)
+                            elif isinstance(block, str):
+                                if block == 'CommandLine|contains|all':
+                                    count += 1
+                            return count
+
+                        def has_block_with_two_or_more(block):
+                            if isinstance(block, dict):
+                                for v in block.values():
+                                    if has_block_with_two_or_more(v):
+                                        return True
+                                # Count in this block
+                                block_count = 0
+                                for v in block.values():
+                                    block_count += count_in_block(v)
+                                if block_count >= 2:
+                                    return True
+                            elif isinstance(block, list):
+                                for item in block:
+                                    if has_block_with_two_or_more(item):
+                                        return True
+                            return False
+
+                        if has_block_with_two_or_more(doc):
+                            files_with_matches.append(file_path)
                 except Exception as e:
                     print(f"❌ Error reading {file_path}: {e}")
-    print(i)
-    print(j)
-    return None
+
+    # Save results
+    with open("files_with_two_or_more_CommandLine_contains_all.txt", "w", encoding="utf-8") as out_file:
+        for path in files_with_matches:
+            out_file.write(path + "\n")
+    return files_with_matches
+print("------------------------------------------------------------------")
+files= find_first_file_with_two_data_contains_all(r"C:\Users\AHMED\Desktop\new-approch\sigma\rules\windows")  # Update path if needed
 
 def find_condition_one_of_pattern(file_path):
     """
@@ -202,4 +244,4 @@ for root, _, files in os.walk(folder_path):
             if find_condition_one_of_pattern(file_path):
                 print(f"✅ Found condition pattern in: {file_path}")
                 i= i + 1
-print(f"Total files with '1 of ... and 1 of ...' condition patterns: {i}")
+

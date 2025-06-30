@@ -689,38 +689,3 @@ class SigmaSummaryGenerator:
 
         return sub_variants
 
-def main():
-    parser = argparse.ArgumentParser(description="Generate Sigma rule summary JSON and base log variants.")
-    parser.add_argument("-i", "--input", required=True, help="Path to Sigma YAML rule file")
-    parser.add_argument("-o", "--output", required=True, help="Path to output summary JSON file (base name)")
-    args = parser.parse_args()
-
-    generator = SigmaSummaryGenerator(args.input, args.output)
-
-    # Step 1: Create your existing summary
-    generator.create_structured_summary_json()
-    print(f"Structured summary JSON created at {args.output}")
-
-    # Step 2: Generate multiple base logs from condition
-    base_logs = generator.generate_base_logs_from_condition()
-    print(f"Found {len(base_logs)} base log variant(s) from condition")
-
-    # Save each variant + sub-variants
-    for i, base_log in enumerate(base_logs):
-        variant_filename = f"{args.output.replace('.json', '')}_variant_{i}.json"
-        with open(variant_filename, 'w', encoding='utf-8') as f:
-            json.dump(base_log, f, indent=2)
-        print(f"Base log variant saved: {variant_filename}")
-
-        # Now generate sub-variants:
-        sub_variants = generator.generate_sub_variants(base_log)
-        print(f"Base log {i} → {len(sub_variants)} sub-variants")
-
-        for j, sub in enumerate(sub_variants):
-            sub_filename = f"{args.output.replace('.json', '')}_variant_{i}_sub_{j}.json"
-            with open(sub_filename, 'w', encoding='utf-8') as f:
-                json.dump(sub, f, indent=2)
-            print(f"Sub-variant saved: {sub_filename}")
-
-if __name__ == "__main__":
-    main()
