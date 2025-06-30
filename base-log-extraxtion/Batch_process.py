@@ -14,9 +14,14 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir_sub = output_dir / "sub_variants"  # Directory for sub-variants
     yaml_files = list(input_dir.glob("**/*.yml")) + list(input_dir.glob("**/*.yaml"))
+    total_files = len(yaml_files)
 
-    for yaml_path in yaml_files:
+
+    for idx, yaml_path in enumerate(yaml_files, 1):
         try:
+            percent = 100 * idx / total_files
+            print(f"[{idx}/{total_files}] ({percent:.1f}%) Processing {yaml_path}")
+
             # For each YAML file, process it
             print(f"Processing {yaml_path}")
             generator = SigmaSummaryGenerator(str(yaml_path), "dummy.json")
