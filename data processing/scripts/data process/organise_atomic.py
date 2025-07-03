@@ -151,7 +151,7 @@ def is_name_in_yamls(name, yaml_data):
     return found_in
 
 # Example usage after your main execution:
-# count_unmoved_folders(root_dir, output_root)
+count_unmoved_folders(root_dir, output_root)
 # === MAIN EXECUTION ===
 i = 0
 j = 0
