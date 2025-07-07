@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# -------------------[ SETUP SCRIPT: init.sh ]--------------------
+
+# Usage:
+#   sh ./init.sh <huggingface-model-id> <git-dataset-url>
+#
+# Example:
+#   sh ./init.sh meta-llama/Meta-Llama-3.1-8B https://github.com/logpai/loghub.git
+
+#############################
+# 1. Load modules 
+#############################
+
+module load python/3.12 scipy-stack gcc/13.3 arrow git-lfs cuda/12.6
+#############################
+# 2. Setup virtualenv
+#############################
+ENV="$HOME/training_env"
+
+echo "Creating virtualenv at $ENV"
+virtualenv --no-download "$ENV"
+source "$ENV/bin/activate"
+
+#############################
+# 3. Install Python packages (offline, from local wheels)
+#############################
+
+echo "Installing Python dependencies..."
+pip install --no-index --upgrade pip
+pip install --no-index torch transformers datasets wandb bitsandbytes peft accelerate deepspeed trl packaging ninja pyyaml matplotlib seaborn
+
+#############################
+# 4. Download HF Model (if provided)
+#############################
+
+if [ "$1" ]; then
+  MODEL_ID="$1"
+  MODEL_DIR="$SCRATCH/models/$MODEL_ID"
+  mkdir -p "$MODEL_DIR"
+  echo "Downloading HF model $MODEL_ID to $MODEL_DIR"
+  huggingface-cli download "$MODEL_ID" --local-dir "$MODEL_DIR"
+fi
+
+#############################
+# 5. Clone Dataset Repo 
+#############################
+
+if [ "$2" ]; then
+  GIT_DATA="$2"
+  DATA_DIR="$SCRATCH/datasets/$(basename "$GIT_DATA" .git)"
+  echo "Cloning dataset $GIT_DATA to $DATA_DIR"
+  git clone "$GIT_DATA" "$DATA_DIR"
+fi
+
+#############################
+# 6. Deactivate env (done)
+#############################
+deactivate
+
+echo "Setup complete! Your environment is at $ENV"
+echo "Model (if downloaded): $MODEL_DIR"
+echo "Dataset (if cloned): $DATA_DIR"
+
+# ---------------------------------------------------------------------
