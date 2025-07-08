@@ -48,7 +48,7 @@ fi
 
 if [ "$2" ]; then
   GIT_DATA="$2"
-  DATA_DIR="$SCRATCH/datasets/$(basename "$GIT_DATA" .git)"
+  DATA_DIR="$SCRATCH/dataset/$(basename "$GIT_DATA" .git)"
   echo "Cloning dataset $GIT_DATA to $DATA_DIR"
   git clone "$GIT_DATA" "$DATA_DIR"
 fi
