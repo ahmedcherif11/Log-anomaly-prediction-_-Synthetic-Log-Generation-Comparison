@@ -37,7 +37,7 @@ cd "$OUTPUT_DIR" || exit
 # If using Accelerate
 time accelerate launch --num_processes=4 \
   --main_process_port=29500 \
-  "$HOME/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data processing/scripts/llm-pretrain\
+  "$HOME/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data processing/scripts/llm-pretrain.py"
   --model "$MODEL_NAME" \
   --dataset "$DATASET" \
   --run-name "$RUN_NAME" \
