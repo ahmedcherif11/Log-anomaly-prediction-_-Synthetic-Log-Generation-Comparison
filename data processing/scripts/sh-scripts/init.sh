@@ -38,7 +38,7 @@ if [ "$1" ]; then
   MODEL_ID="$1"
   MODEL_DIR="$SCRATCH/models/$MODEL_ID"
   mkdir -p "$MODEL_DIR"
-  source SCRATCH/dataset/token.sh
+  source /scratch/cherif/dataset/token.sh
   echo "Downloading HF model $MODEL_ID to $MODEL_DIR"
   huggingface-cli download "$MODEL_ID" --local-dir "$MODEL_DIR" --token "$HF_TOKEN"
 fi
