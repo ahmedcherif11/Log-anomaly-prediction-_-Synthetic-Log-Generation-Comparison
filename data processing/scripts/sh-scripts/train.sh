@@ -15,7 +15,7 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 # ---- Variables ----
 
 # Path to your processed JSONL dataset (pre-merged, cleaned, shuffled)
-DATASET="$SCRATCH/datasets/windows_logs_500k.jsonl"
+DATASET="$SCRATCH/dataset/data.jsonl"
 # Path where you want to store results
 OUTPUT_DIR="$SCRATCH/models/windowslog-pretrain"
 # Model name (local cache or HuggingFace)
@@ -37,7 +37,7 @@ cd "$OUTPUT_DIR" || exit
 # If using Accelerate
 time accelerate launch --num_processes=4 \
   --main_process_port=29500 \
-  "$HOME/your_project_dir/train.py" \
+  "$HOME/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data processing/scripts/llm-pretrain\
   --model "$MODEL_NAME" \
   --dataset "$DATASET" \
   --run-name "$RUN_NAME" \
