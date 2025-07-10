@@ -4,3 +4,4 @@ EVTX-ATTACK-SAMPLES/
 Security-Datasets/
 sigma/
 EvtxeCmd/
+data processing/scripts/sh-scripts/statics/token.sh
