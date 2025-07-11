@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --gpus-per-node=v100:4       # Request 4 V100 GPUs
+#SBATCH --gres=gpu:v100:4            # Request 4 V100 GPUs
 #SBATCH --mem=180G                   # More RAM for big batches/context
 #SBATCH --cpus-per-task=32           # Use more CPUs for dataloader
 #SBATCH --output=./data/%N-%j.out
