@@ -19,7 +19,7 @@ DATASET="$SCRATCH/dataset/data.jsonl"
 # Path where you want to store results
 OUTPUT_DIR="$SCRATCH/models/windowslog-pretrain"
 # Model name (local cache or HuggingFace)
-MODEL_NAME="meta-llama/Meta-Llama-3-8B"
+MODEL_NAME="meta-llama/Meta-Llama-3.1-8B"
 RUN_NAME="llama3-winevt-pretrain-$(date +%Y%m%d-%H%M%S)"
 
 mkdir -p "$OUTPUT_DIR/$RUN_NAME"
@@ -37,7 +37,7 @@ cd "$OUTPUT_DIR" || exit
 # If using Accelerate
 time accelerate launch --num_processes=4 \
   --main_process_port=29500 \
-  "$HOME/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data processing/scripts/llm-pretrain.py"
+  "$HOME/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain.py" \
   --model "$MODEL_NAME" \
   --dataset "$DATASET" \
   --run-name "$RUN_NAME" \
