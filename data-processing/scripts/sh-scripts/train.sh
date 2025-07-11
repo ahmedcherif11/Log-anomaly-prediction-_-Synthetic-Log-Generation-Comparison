@@ -5,7 +5,9 @@
 #SBATCH --cpus-per-task=32           # Use more CPUs for dataloader
 #SBATCH --output=./data/%N-%j.out
 #SBATCH --time=1-00:00:00            # 1 day max
-#SBATCH --account=def-dmouheb      
+#SBATCH --account=def-dmouheb  
+#SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
+#SBATCH --mail-type=ALL    
 
 # ---- Environment Setup ----
 
