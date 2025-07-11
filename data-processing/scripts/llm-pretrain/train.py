@@ -137,7 +137,8 @@ def setup_parser():
     parser.add_argument("--grad", type=int, default=4)
     parser.add_argument("--context", type=int, default=256)
     parser.add_argument("--root", type=str, default="./run")
-    parser.add_argument("--checkpoint", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--checkpoint", action=argparse.BooleanOptionalAction, help="Resume from checkpoint or not")
+    parser.add_argument("--save_checkpoint", action=argparse.BooleanOptionalAction, help="Wether to save fsdp peft training from existing checkpoint", dest="is_save_checkpoint")
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--lr", type=float, default=5e-4)
     return parser
