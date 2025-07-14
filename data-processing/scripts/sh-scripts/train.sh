@@ -4,7 +4,7 @@
 #SBATCH --mem=180G                   # More RAM for big batches/context
 #SBATCH --cpus-per-task=32           # Use more CPUs for dataloader
 #SBATCH --output=/home/cherif/scratch/models/slurm-logs/%N-%j.out
-#SBATCH --time=1-00:00:00            # 1 day max
+#SBATCH --time=04:00:00            # 1 day max
 #SBATCH --account=def-dmouheb  
 #SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
 #SBATCH --mail-type=ALL    
@@ -37,9 +37,8 @@ echo "Starting LLM pretraining on Windows Event Logs..."
 cd "$OUTPUT_DIR" || exit
 
 # If using Accelerate
-time accelerate launch --num_processes=4 \
-  --main_process_port=29500 \
-  "$HOME/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain.py" \
+time accelerate launch 
+  "$HOME/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/train.py" \
   --model "$MODEL_NAME" \
   --dataset "$DATASET" \
   --run-name "$RUN_NAME" \
