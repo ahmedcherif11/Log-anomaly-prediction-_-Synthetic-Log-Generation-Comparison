@@ -3,7 +3,7 @@
 #SBATCH --gres=gpu:v100l:4	           # Request 4 V100 GPUs
 #SBATCH --mem=32000                  # More RAM for big batches/context
 #SBATCH --cpus-per-task=16           # Use more CPUs for dataloader
-#SBATCH --output=/home/cherif/scratch/models/slurm-logs/%N-%j.out
+#SBATCH --output=$SCRATCH/models/slurm-logs/%N-%j.out
 #SBATCH --time=04:00:00            # 1 day max
 #SBATCH --account=def-dmouheb  
 #SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
