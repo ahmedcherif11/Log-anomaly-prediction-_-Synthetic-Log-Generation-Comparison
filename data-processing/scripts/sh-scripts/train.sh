@@ -38,7 +38,7 @@ cd "$OUTPUT_DIR" || exit
 
 # If using Accelerate
 time accelerate launch 
-  "$HOME/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/train.py" \
+  "$HOME/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/train.py" \
   --model "$MODEL_NAME" \
   --dataset "$DATASET" \
   --run-name "$RUN_NAME" \
