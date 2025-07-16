@@ -45,7 +45,7 @@ time accelerate launch /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synt
   --grad 8 \
   --context 1024 \
   --root "$OUTPUT_DIR" \
-  --checkpoint False \
+  --checkpoint True \
   --save_checkpoint False
 
 # ---- Save and Archive ----
