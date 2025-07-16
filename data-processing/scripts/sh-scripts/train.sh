@@ -45,8 +45,7 @@ time accelerate launch --config_file="$PROJ/config/train_config.yaml" /project/d
   --grad 8 \
   --context 1024 \
   --root "$OUTPUT_DIR" \
-  --checkpoint True \
-  --save_checkpoint False
+  --checkpoint  
 
 # ---- Save and Archive ----
 
