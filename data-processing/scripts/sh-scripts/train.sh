@@ -37,9 +37,9 @@ echo "Starting LLM pretraining on Windows Event Logs..."
 cd "$OUTPUT_DIR" || exit
 
 # If using Accelerate
-time accelerate launch /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/train.py \
+time accelerate launch --config_file="$PROJ/config/fsdp_config.yaml" /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/train.py \
   --model "$MODEL_NAME" \
-  --dataset "$DATASET" \
+  --train-file "$DATASET" \
   --run-name "$RUN_NAME" \
   --batch 1 \
   --grad 8 \
