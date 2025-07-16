@@ -27,6 +27,13 @@ def main(args_pars):
         task_type=TaskType.CAUSAL_LM, target_modules="all-linear",
     )
 
+    # Directory setup
+    run_path = f'{args_pars.root}/{args_pars.rname}'
+    output_dir = f'{run_path}/checkpoint/'
+    save_run = f'{run_path}/model/'
+    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(save_run, exist_ok=True)
+
     # Load model/tokenizer
     model = AutoModelForCausalLM.from_pretrained(
         args_pars.model,
@@ -39,20 +46,17 @@ def main(args_pars):
     tokenizer.pad_token = tokenizer.eos_token
 
     # Load data (expects .jsonl, one log per line)
-    # If your file is just raw text per line, use "text" field.
     data_files = {}
     if os.path.exists(args_pars.train_file):
         data_files["train"] = args_pars.train_file
     if args_pars.valid_file and os.path.exists(args_pars.valid_file):
         data_files["validation"] = args_pars.valid_file
 
-    # If "field=None", HF will create a column "text"
     dataset = datasets.load_dataset("json", data_files=data_files, field=None)
     train_data = dataset["train"]
     eval_data = dataset["validation"] if "validation" in dataset else None
 
     def preprocess_function(examples):
-        # If your logs are a dict, use json.dumps. If string, pass as-is.
         import json
         if isinstance(examples["text"][0], dict):
             texts = [json.dumps(e) for e in examples["text"]]
@@ -70,9 +74,6 @@ def main(args_pars):
         )
 
     # Training args
-    run_path = f'{args_pars.root}/{args_pars.rname}'
-    output_dir = f'{run_path}/checkpoint/'
-
     train_args = SFTConfig(
         do_train=True,
         per_device_train_batch_size=args_pars.batch,
@@ -109,7 +110,7 @@ def main(args_pars):
         eval_dataset=eval_data,
         args=train_args,
         tokenizer=tokenizer,
-        formatting_func=None,  # Just raw text, no prompt formatting
+        formatting_func=None,
     )
 
     trainer.accelerator.print(
@@ -123,9 +124,18 @@ def main(args_pars):
         f"\tstart_time : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
     )
 
-    trainer.train(resume_from_checkpoint=args_pars.checkpoint)
+    # --- Checkpoint logic ---
+    resume_from = None
+    if args_pars.checkpoint:
+        resume_from = get_last_checkpoint(output_dir)
+        if resume_from is not None:
+            trainer.accelerator.print(f"Resuming from checkpoint: {resume_from}")
+        else:
+            trainer.accelerator.print("No checkpoint found, starting from scratch.")
 
-    trainer.save_model(f"{run_path}/model/")
+    trainer.train(resume_from_checkpoint=resume_from)
+
+    trainer.save_model(save_run)
 
 def setup_parser():
     parser = argparse.ArgumentParser()
@@ -137,8 +147,7 @@ def setup_parser():
     parser.add_argument("--grad", type=int, default=4)
     parser.add_argument("--context", type=int, default=256)
     parser.add_argument("--root", type=str, default="./run")
-    parser.add_argument("--checkpoint", action=argparse.BooleanOptionalAction, help="Resume from checkpoint or not")
-    parser.add_argument("--save_checkpoint", action=argparse.BooleanOptionalAction, help="Wether to save fsdp peft training from existing checkpoint", dest="is_save_checkpoint")
+    parser.add_argument("--checkpoint", action=argparse.BooleanOptionalAction, help="Resume from last checkpoint if available")
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--lr", type=float, default=5e-4)
     return parser
