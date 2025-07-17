@@ -1,18 +1,17 @@
 import json
 
-fixed = []
-with open("/scratch/cherif/dataset/data.jsonl", "r", encoding="utf-8") as fin:
-    for idx, line in enumerate(fin, 1):
-        try:
-            obj = json.loads(line)
-            if "UserName" in obj:
-                # Replace nan/NaN/None with ""
-                if str(obj["UserName"]).lower() in ("nan", "none"):
-                    obj["UserName"] = ""
-            fixed.append(obj)
-        except Exception as e:
-            print(f"Skipped line {idx}: {e}")
+infile = "/scratch/cherif/dataset/data.jsonl"
+outfile = "/scratch/cherif/dataset/data_fixed.jsonl"
 
-with open("/scratch/cherif/dataset/data_fixed.jsonl", "w", encoding="utf-8") as fout:
-    for obj in fixed:
-        fout.write(json.dumps(obj) + "\n")
+with open(infile, "r", encoding="utf-8") as fin, open(outfile, "w", encoding="utf-8") as fout:
+    for line in fin:
+        try:
+            # Replace unquoted NaN (from pandas) with null before parsing
+            fixed_line = line.replace(":NaN", ":null")
+            obj = json.loads(fixed_line)
+            # If you want to also fix quoted "NaN" as empty string:
+            obj = {k: ("" if v == "NaN" else v) for k, v in obj.items()}
+            fout.write(json.dumps(obj) + "\n")
+        except Exception as e:
+            print("Error parsing:", line)
+            print(e)

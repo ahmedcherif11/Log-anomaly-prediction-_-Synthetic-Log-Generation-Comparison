@@ -1,6 +1,6 @@
 import json
 
-path = r"C:\Users\AHMED\Desktop\new-approch\dataset\data-for-train-llm\data.jsonl"
+path = r"/scratch/cherif/dataset/data_fixed.jsonl"
 with open(path, "r", encoding="utf-8") as f:
     for idx, line in enumerate(f, 1):
         try:
