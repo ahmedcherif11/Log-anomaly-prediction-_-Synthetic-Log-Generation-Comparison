@@ -4,7 +4,7 @@
 #SBATCH --mem=32000                  # More RAM for big batches/context
 #SBATCH --cpus-per-task=16           # Use more CPUs for dataloader
 #SBATCH --output=$SCRATCH/models/slurm-logs/%N-%j.out
-#SBATCH --time=04:00:00            # 1 day max
+#SBATCH --time=01:00:00            # 1 day max
 #SBATCH --account=def-dmouheb  
 #SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
 #SBATCH --mail-type=ALL    
@@ -21,7 +21,7 @@ DATASET="$SCRATCH/dataset/data.jsonl"
 # Path where you want to store results
 OUTPUT_DIR="$SCRATCH/models/windowslog-pretrain"
 # Model name (local cache or HuggingFace)
-MODEL_NAME="meta-llama/Meta-Llama-3.1-8B"
+MODEL_NAME=""/home/cherif/scratch/models/meta-llama/Meta-Llama-3.1-8B""
 RUN_NAME="llama3-winevt-pretrain-$(date +%Y%m%d-%H%M%S)"
 
 mkdir -p "$OUTPUT_DIR/$RUN_NAME"
