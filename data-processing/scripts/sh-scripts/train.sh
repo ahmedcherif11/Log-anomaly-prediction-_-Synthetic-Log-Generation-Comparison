@@ -21,7 +21,7 @@ DATASET="$SCRATCH/dataset/data_fixed_shuffled.jsonl"
 # Path where you want to store results
 OUTPUT_DIR="$SCRATCH/models/windowslog-pretrain"
 # Model name (local cache or HuggingFace)
-MODEL_NAME=""/home/cherif/scratch/models/meta-llama/Meta-Llama-3.1-8B""
+MODEL_NAME="/home/cherif/scratch/models/meta-llama/Meta-Llama-3.1-8B"
 RUN_NAME="llama3-winevt-pretrain-$(date +%Y%m%d-%H%M%S)"
 
 mkdir -p "$OUTPUT_DIR/$RUN_NAME"
