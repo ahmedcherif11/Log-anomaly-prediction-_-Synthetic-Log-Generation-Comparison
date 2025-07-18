@@ -1,53 +1,29 @@
 import json
+import math
 
-input_path = "/scratch/cherif/dataset/data.jsonl"
-output_path = "/scratch/cherif/dataset/data_fixed_normalized.jsonl"
+infile = "/scratch/cherif/dataset/data_fixed_shuffled.jsonl"
+outfile = "/scratch/cherif/dataset/data_fixed_shuffled_normalized.jsonl"
 
-# with open(infile, "r", encoding="utf-8") as fin, open(outfile, "w", encoding="utf-8") as fout:
-#     for line in fin:
-#         try:
-#             # Replace unquoted NaN (from pandas) with null before parsing
-#             fixed_line = line.replace(":NaN", ":null")
-#             obj = json.loads(fixed_line)
-#             # If you want to also fix quoted "NaN" as empty string:
-#             obj = {k: ("" if v == "NaN" else v) for k, v in obj.items()}
-#             fout.write(json.dumps(obj) + "\n")
-#         except Exception as e:
-#             print("Error parsing:", line)
-#             print(e)
+# All fields that might have int, float, or str and should be str (except 'null')
+fields_to_str = [
+    "ProcessId", "ProcessID", "UserId", "MapDescription", "UserName", "RemoteHost",
+    "PayloadData1", "PayloadData2", "PayloadData3", "PayloadData4",
+    "PayloadData5", "PayloadData6", "ExecutableInfo", "Keywords", "Task"
+]
 
-
-# with open(infile, "r") as fin, open(outfile, "w") as fout:
-#     for line in fin:
-#         obj = json.loads(line)
-#         kw = obj.get("Keywords", None)
-#         # Convert integer Keywords to string, or null if it's this value
-#         if isinstance(kw, int):
-#             # Option 1: convert ALL int keywords to string
-#             obj["Keywords"] = str(kw)
-#             # Option 2: or set just the weird value to null
-#             # if kw == -9223372036854775808:
-#             #     obj["Keywords"] = None
-#             # else:
-#             #     obj["Keywords"] = str(kw)
-#         fout.write(json.dumps(obj) + "\n")
-# List fields to normalize as string or null
-
-FIELDS_TO_STRINGIFY = ["Task", "Keywords", "UserName", "MapDescription", "RemoteHost"]
-
-def normalize_field(obj, key):
-    val = obj.get(key, None)
-    if val is None or val == "null":
-        obj[key] = None
-    else:
-        obj[key] = str(val)
-    return obj
-
-with open(input_path, "r") as infile, open(output_path, "w") as outfile:
-    for line in infile:
+with open(infile, "r", encoding="utf-8") as f_in, open(outfile, "w", encoding="utf-8") as f_out:
+    for idx, line in enumerate(f_in, 1):
         obj = json.loads(line)
-        for field in FIELDS_TO_STRINGIFY:
-            obj = normalize_field(obj, field)
-        outfile.write(json.dumps(obj) + "\n")
+        for k in fields_to_str:
+            if k in obj and obj[k] is not None:
+                # If it's a float nan, convert to empty string or null if you want
+                if isinstance(obj[k], float) and math.isnan(obj[k]):
+                    obj[k] = ""
+                else:
+                    obj[k] = str(obj[k])
+        f_out.write(json.dumps(obj) + "\n")
+        # Optionally print progress
+        if idx % 100000 == 0:
+            print(f"Processed {idx} lines...")
 
-print(f"Normalized fields: {FIELDS_TO_STRINGIFY}\nOutput written to: {output_path}")
+print("Normalization complete!")
