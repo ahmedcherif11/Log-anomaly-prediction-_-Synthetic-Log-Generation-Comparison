@@ -1,0 +1,1589 @@
+Field: SeverityValue
+  int: 254939
+  null: 265404
+--------------------
+Field: SubjectDomainName
+  str: 50643
+  null: 469700
+--------------------
+Field: EventReceivedTime
+  str: 254939
+  null: 265404
+--------------------
+Field: EventID
+  int: 515432
+  null: 4911
+--------------------
+Field: ProviderGuid
+  str: 488945
+  null: 31398
+--------------------
+Field: ExecutionProcessID
+  int: 253304
+  null: 267039
+--------------------
+Field: Channel
+  str: 520343
+--------------------
+Field: host
+  str: 254939
+  null: 265404
+--------------------
+Field: ProcessId
+  str: 256787
+  null: 263556
+--------------------
+Field: Opcode
+  str: 225896
+  null: 294447
+--------------------
+Field: EventTime
+  str: 254939
+  null: 265404
+--------------------
+Field: TransactionId
+  str: 9385
+  null: 510958
+--------------------
+Field: ObjectServer
+  str: 34680
+  null: 485663
+--------------------
+Field: AccessMask
+  str: 16332
+  null: 504011
+--------------------
+Field: SourceModuleType
+  str: 254939
+  null: 265404
+--------------------
+Field: ProcessName
+  str: 38771
+  null: 481572
+--------------------
+Field: @version
+  str: 254939
+  null: 265404
+--------------------
+Field: OpcodeValue
+  int: 236461
+  null: 283882
+--------------------
+Field: Severity
+  str: 254939
+  null: 265404
+--------------------
+Field: HandleId
+  str: 33347
+  null: 486996
+--------------------
+Field: ObjectName
+  str: 16292
+  null: 504051
+--------------------
+Field: SourceName
+  str: 514068
+  null: 6275
+--------------------
+Field: Category
+  str: 225609
+  null: 294734
+--------------------
+Field: Keywords
+  str: 514825
+  null: 5518
+--------------------
+Field: ObjectType
+  str: 16511
+  null: 503832
+--------------------
+Field: SubjectUserSid
+  str: 50643
+  null: 469700
+--------------------
+Field: ThreadID
+  int: 254939
+  null: 265404
+--------------------
+Field: EventType
+  str: 279271
+  null: 241072
+--------------------
+Field: Message
+  str: 442707
+  null: 77636
+--------------------
+Field: AccessReason
+  str: 9504
+  null: 510839
+--------------------
+Field: PrivilegeList
+  str: 11831
+  null: 508512
+--------------------
+Field: @timestamp
+  str: 509914
+  null: 10429
+--------------------
+Field: SubjectLogonId
+  str: 50643
+  null: 469700
+--------------------
+Field: port
+  int: 254939
+  null: 265404
+--------------------
+Field: RecordNumber
+  int: 259850
+  null: 260493
+--------------------
+Field: SubjectUserName
+  str: 50643
+  null: 469700
+--------------------
+Field: Task
+  str: 515432
+  null: 4911
+--------------------
+Field: SourceModuleName
+  str: 254939
+  null: 265404
+--------------------
+Field: Version
+  int: 236461
+  null: 283882
+--------------------
+Field: AccessList
+  str: 15778
+  null: 504565
+--------------------
+Field: RestrictedSidCount
+  str: 9367
+  null: 510976
+--------------------
+Field: ResourceAttributes
+  str: 15057
+  null: 505286
+--------------------
+Field: Hostname
+  str: 515432
+  null: 4911
+--------------------
+Field: tags
+  list: 253304
+  null: 267039
+--------------------
+Field: UserName
+  null: 512824
+  str: 7519
+--------------------
+Field: MapDescription
+  null: 515432
+  str: 4911
+--------------------
+Field: RemoteHost
+  null: 515432
+  str: 4911
+--------------------
+Field: TicketEncryptionType
+  null: 520273
+  str: 70
+--------------------
+Field: MinPasswordAge
+  null: 520342
+  str: 1
+--------------------
+Field: PrimaryGroupId
+  null: 520341
+  str: 2
+--------------------
+Field: ImagePath
+  null: 520339
+  str: 4
+--------------------
+Field: NewSd
+  null: 520164
+  str: 179
+--------------------
+Field: AuditPolicyChanges
+  null: 520217
+  str: 126
+--------------------
+Field: ScriptPath
+  null: 520341
+  str: 2
+--------------------
+Field: Priority
+  null: 520316
+  str: 27
+--------------------
+Field: TargetUser
+  null: 405760
+  str: 114583
+--------------------
+Field: Product
+  null: 471650
+  str: 48693
+--------------------
+Field: NewName
+  null: 520342
+  str: 1
+--------------------
+Field: FilterId
+  null: 517737
+  str: 2606
+--------------------
+Field: TerminalSessionId
+  null: 519516
+  str: 827
+--------------------
+Field: OldTime
+  null: 520342
+  str: 1
+--------------------
+Field: SupportInfo1
+  null: 520340
+  str: 3
+--------------------
+Field: Application
+  null: 507093
+  str: 13250
+--------------------
+Field: TicketOptions
+  null: 520273
+  str: 70
+--------------------
+Field: Operation
+  null: 520276
+  str: 67
+--------------------
+Field: ProfilePath
+  null: 520341
+  str: 2
+--------------------
+Field: IpAddress
+  null: 519343
+  str: 1000
+--------------------
+Field: PreAuthType
+  null: 520338
+  str: 5
+--------------------
+Field: Conditions
+  null: 517737
+  str: 2606
+--------------------
+Field: ShareName
+  null: 520113
+  str: 230
+--------------------
+Field: param7
+  null: 520342
+  str: 1
+--------------------
+Field: OriginalFileName
+  null: 471650
+  str: 48693
+--------------------
+Field: param9
+  null: 520342
+  str: 1
+--------------------
+Field: SourcePort
+  null: 504492
+  str: 15851
+--------------------
+Field: Path
+  null: 520222
+  str: 121
+--------------------
+Field: ContextInfo
+  null: 503588
+  str: 16755
+--------------------
+Field: EventIdx
+  null: 519703
+  str: 640
+--------------------
+Field: param8
+  null: 520342
+  str: 1
+--------------------
+Field: ElevatedToken
+  null: 519703
+  str: 640
+--------------------
+Field: OldUacValue
+  null: 520341
+  str: 2
+--------------------
+Field: UserAccountControl
+  null: 520341
+  str: 2
+--------------------
+Field: ClientProcessStartKey
+  null: 520332
+  str: 11
+--------------------
+Field: TargetLogonGuid
+  null: 520308
+  str: 35
+--------------------
+Field: LogonGuid
+  null: 518787
+  str: 1556
+--------------------
+Field: Details
+  null: 485991
+  str: 34352
+--------------------
+Field: RuleId
+  null: 520293
+  str: 50
+--------------------
+Field: StartFunction
+  null: 520332
+  str: 11
+--------------------
+Field: QueryResults
+  null: 519788
+  str: 555
+--------------------
+Field: Error
+  null: 520322
+  str: 21
+--------------------
+Field: AdditionalInfo2
+  null: 520322
+  str: 21
+--------------------
+Field: EnabledPrivilegeList
+  null: 517597
+  str: 2746
+--------------------
+Field: SupportInfo2
+  null: 520340
+  str: 3
+--------------------
+Field: PackageName
+  null: 520311
+  str: 32
+--------------------
+Field: ClientName
+  null: 520341
+  str: 2
+--------------------
+Field: LocationInformation
+  null: 520341
+  str: 2
+--------------------
+Field: SubcategoryId
+  null: 520217
+  str: 126
+--------------------
+Field: Type
+  null: 519647
+  str: 696
+--------------------
+Field: VolumeName
+  null: 520295
+  str: 48
+--------------------
+Field: TargetLogonId
+  null: 515112
+  str: 5231
+--------------------
+Field: ChangeType
+  null: 517737
+  str: 2606
+--------------------
+Field: param5
+  null: 520342
+  str: 1
+--------------------
+Field: updateTitle
+  null: 520340
+  str: 3
+--------------------
+Field: LayerKey
+  null: 517737
+  str: 2606
+--------------------
+Field: Provider
+  null: 515432
+  str: 4911
+--------------------
+Field: PayloadData1
+  null: 515432
+  str: 4911
+--------------------
+Field: RunspaceId
+  null: 518648
+  str: 1695
+--------------------
+Field: ServiceSid
+  null: 520273
+  str: 70
+--------------------
+Field: Consumer
+  null: 520341
+  str: 2
+--------------------
+Field: ParentImage
+  null: 519516
+  str: 827
+--------------------
+Field: UtcTime
+  null: 113744
+  str: 406599
+--------------------
+Field: MinimumPasswordLengthAudit
+  null: 520342
+  str: 1
+--------------------
+Field: DriveName
+  null: 520341
+  str: 2
+--------------------
+Field: MandatoryLabel
+  null: 519639
+  str: 704
+--------------------
+Field: MiniportNameLen
+  null: 520305
+  str: 38
+--------------------
+Field: SourcePortName
+  null: 517786
+  str: 2557
+--------------------
+Field: ReturnCode
+  null: 519582
+  str: 761
+--------------------
+Field: ActivityID
+  null: 500695
+  str: 19648
+--------------------
+Field: NewProcessId
+  null: 519639
+  str: 704
+--------------------
+Field: UserSid
+  null: 517737
+  str: 2606
+--------------------
+Field: AlgorithmName
+  null: 520280
+  str: 63
+--------------------
+Field: TargetUserSid
+  null: 515024
+  str: 5319
+--------------------
+Field: type
+  null: 518708
+  str: 1635
+--------------------
+Field: ActionName
+  null: 520341
+  str: 2
+--------------------
+Field: InstanceId
+  null: 520336
+  str: 7
+--------------------
+Field: LayerId
+  null: 517737
+  str: 2606
+--------------------
+Field: PasswordProperties
+  null: 520342
+  str: 1
+--------------------
+Field: SourceProcessId
+  null: 304203
+  str: 216140
+--------------------
+Field: SessionName
+  null: 520341
+  str: 2
+--------------------
+Field: Address
+  null: 520335
+  str: 8
+--------------------
+Field: RuleAttr
+  null: 520297
+  str: 46
+--------------------
+Field: QueryName
+  null: 519780
+  str: 563
+--------------------
+Field: SourceProcessGUID
+  null: 312467
+  str: 207876
+--------------------
+Field: Computer
+  null: 515432
+  str: 4911
+--------------------
+Field: UserPrincipalName
+  null: 520341
+  str: 2
+--------------------
+Field: EventRecordId
+  null: 515432
+  int: 4911
+--------------------
+Field: PayloadData6
+  null: 515432
+  str: 4911
+--------------------
+Field: FQDN
+  null: 520333
+  str: 10
+--------------------
+Field: UserParameters
+  null: 520341
+  str: 2
+--------------------
+Field: FilterName
+  null: 517737
+  str: 2606
+--------------------
+Field: CalloutKey
+  null: 517737
+  str: 2606
+--------------------
+Field: ServiceFileName
+  null: 520339
+  str: 4
+--------------------
+Field: PreviousTime
+  null: 520342
+  str: 1
+--------------------
+Field: param4
+  null: 520295
+  str: 48
+--------------------
+Field: ReasonCode
+  null: 520339
+  str: 4
+--------------------
+Field: ClientCreationTime
+  null: 520310
+  str: 33
+--------------------
+Field: RemoteMachineID
+  null: 513938
+  str: 6405
+--------------------
+Field: KeyName
+  null: 520280
+  str: 63
+--------------------
+Field: DisplayName
+  null: 520341
+  str: 2
+--------------------
+Field: AccountExpires
+  null: 520341
+  str: 2
+--------------------
+Field: GrantedAccess
+  null: 312467
+  str: 207876
+--------------------
+Field: FileVersion
+  null: 471650
+  str: 48693
+--------------------
+Field: TaskContentNew
+  null: 520298
+  str: 45
+--------------------
+Field: TargetLinkedLogonId
+  null: 519703
+  str: 640
+--------------------
+Field: TargetUserName
+  null: 514497
+  str: 5846
+--------------------
+Field: SourceImage
+  null: 312456
+  str: 207887
+--------------------
+Field: DestinationPortName
+  null: 517758
+  str: 2585
+--------------------
+Field: LmPackageName
+  null: 519678
+  str: 665
+--------------------
+Field: HiveName
+  null: 520337
+  str: 6
+--------------------
+Field: RestrictedAdminMode
+  null: 519703
+  str: 640
+--------------------
+Field: Schema
+  null: 520340
+  str: 3
+--------------------
+Field: param10
+  null: 520342
+  str: 1
+--------------------
+Field: PayloadData2
+  null: 515432
+  str: 4911
+--------------------
+Field: DestinationPort
+  null: 517726
+  str: 2617
+--------------------
+Field: ShareLocalPath
+  null: 520185
+  str: 158
+--------------------
+Field: DCName
+  null: 520340
+  str: 3
+--------------------
+Field: ProfileChanged
+  null: 520339
+  str: 4
+--------------------
+Field: OldValueType
+  null: 520330
+  str: 13
+--------------------
+Field: DnsHostName
+  null: 520342
+  str: 1
+--------------------
+Field: ServiceAccount
+  null: 520339
+  str: 4
+--------------------
+Field: Initiated
+  null: 517726
+  str: 2617
+--------------------
+Field: ProviderName
+  null: 517674
+  str: 2669
+--------------------
+Field: ProcessGuid
+  null: 321635
+  str: 198708
+--------------------
+Field: NewProcessName
+  null: 519639
+  str: 704
+--------------------
+Field: ChunkNumber
+  null: 515432
+  int: 4911
+--------------------
+Field: Level
+  null: 260457
+  str: 259886
+--------------------
+Field: FilterKey
+  null: 517737
+  str: 2606
+--------------------
+Field: AccountName
+  null: 332264
+  str: 188079
+--------------------
+Field: EventCountTotal
+  null: 519703
+  str: 640
+--------------------
+Field: TimeCreated
+  null: 254939
+  str: 265404
+--------------------
+Field: PayloadData5
+  null: 515432
+  str: 4911
+--------------------
+Field: LockoutThreshold
+  null: 520342
+  str: 1
+--------------------
+Field: TargetServerName
+  null: 520308
+  str: 35
+--------------------
+Field: ClientProcessId
+  null: 519598
+  str: 745
+--------------------
+Field: ModifyingUser
+  null: 520339
+  str: 4
+--------------------
+Field: SourceAddress
+  null: 507109
+  str: 13234
+--------------------
+Field: ParentProcessId
+  null: 519505
+  str: 838
+--------------------
+Field: ProviderKey
+  null: 517737
+  str: 2606
+--------------------
+Field: OldValue
+  null: 520330
+  str: 13
+--------------------
+Field: ObjectValueName
+  null: 520330
+  str: 13
+--------------------
+Field: LogonHours
+  null: 520341
+  str: 2
+--------------------
+Field: FilterType
+  null: 517737
+  str: 2606
+--------------------
+Field: Session
+  null: 520310
+  str: 33
+--------------------
+Field: MinimumPasswordLength
+  null: 520342
+  str: 1
+--------------------
+Field: param3
+  null: 520279
+  str: 64
+--------------------
+Field: ClientAddress
+  null: 520341
+  str: 2
+--------------------
+Field: ResultCode
+  null: 520342
+  str: 1
+--------------------
+Field: KeyType
+  null: 520280
+  str: 63
+--------------------
+Field: SessionId
+  null: 520341
+  str: 2
+--------------------
+Field: LogonID
+  null: 520341
+  str: 2
+--------------------
+Field: DestinationIsIpv6
+  null: 517726
+  str: 2617
+--------------------
+Field: OemInformation
+  null: 520342
+  str: 1
+--------------------
+Field: param1
+  null: 520165
+  str: 178
+--------------------
+Field: TargetImage
+  null: 312456
+  str: 207887
+--------------------
+Field: EventTypeOrignal
+  null: 433431
+  str: 86912
+--------------------
+Field: SamAccountName
+  null: 520341
+  str: 2
+--------------------
+Field: Action
+  null: 517737
+  str: 2606
+--------------------
+Field: WorkstationName
+  null: 519678
+  str: 665
+--------------------
+Field: ServicePrincipalNames
+  null: 520342
+  str: 1
+--------------------
+Field: InterfaceIndex
+  null: 519547
+  str: 796
+--------------------
+Field: EventId
+  null: 515432
+  int: 4911
+--------------------
+Field: RelativeTargetName
+  null: 520206
+  str: 137
+--------------------
+Field: HomePath
+  null: 520341
+  str: 2
+--------------------
+Field: DomainPolicyChanged
+  null: 520342
+  str: 1
+--------------------
+Field: CompatibleIds
+  null: 520341
+  str: 2
+--------------------
+Field: LayerRTID
+  null: 507109
+  str: 13234
+--------------------
+Field: NewUacValue
+  null: 520341
+  str: 2
+--------------------
+Field: PackageSid
+  null: 520343
+--------------------
+Field: Properties
+  null: 519854
+  str: 489
+--------------------
+Field: ServiceStartType
+  null: 520339
+  str: 4
+--------------------
+Field: Payload
+  null: 498677
+  str: 21666
+--------------------
+Field: SourceThreadId
+  null: 312467
+  str: 207876
+--------------------
+Field: ProcessingMode
+  null: 520340
+  str: 3
+--------------------
+Field: DeviceName
+  null: 520341
+  str: 2
+--------------------
+Field: PayloadData3
+  null: 515432
+  str: 4911
+--------------------
+Field: TargetName
+  null: 519651
+  str: 692
+--------------------
+Field: ERROR_EVT_UNRESOLVED
+  null: 504592
+  int: 15751
+--------------------
+Field: Image
+  null: 321635
+  str: 198708
+--------------------
+Field: NewTime
+  null: 520341
+  str: 2
+--------------------
+Field: Service
+  null: 518997
+  str: 1346
+--------------------
+Field: TaskContent
+  null: 520339
+  str: 4
+--------------------
+Field: CurrentDirectory
+  null: 519516
+  str: 827
+--------------------
+Field: DeviceDescription
+  null: 520341
+  str: 2
+--------------------
+Field: Contents
+  null: 520305
+  str: 38
+--------------------
+Field: RuleName
+  null: 114784
+  str: 405559
+--------------------
+Field: Identity
+  null: 520340
+  str: 3
+--------------------
+Field: Weight
+  null: 517737
+  str: 2606
+--------------------
+Field: PipeName
+  null: 519139
+  str: 1204
+--------------------
+Field: PreviousCreationUtcTime
+  null: 520036
+  str: 307
+--------------------
+Field: NumberOfGroupPolicyObjects
+  null: 520342
+  str: 1
+--------------------
+Field: QueryStatus
+  null: 519788
+  str: 555
+--------------------
+Field: CreationUtcTime
+  null: 514810
+  str: 5533
+--------------------
+Field: AuthenticationPackageName
+  null: 519678
+  str: 665
+--------------------
+Field: OldSd
+  null: 520164
+  str: 179
+--------------------
+Field: ProcessCreationTime
+  null: 519642
+  str: 701
+--------------------
+Field: ServiceName
+  null: 520265
+  str: 78
+--------------------
+Field: Description
+  null: 471702
+  str: 48641
+--------------------
+Field: PayloadData4
+  null: 515432
+  str: 4911
+--------------------
+Field: UserID
+  null: 332268
+  str: 188075
+--------------------
+Field: ParentUser
+  null: 520131
+  str: 212
+--------------------
+Field: AddressLength
+  null: 520335
+  str: 8
+--------------------
+Field: LogonProcessName
+  null: 519618
+  str: 725
+--------------------
+Field: Profiles
+  null: 520327
+  str: 16
+--------------------
+Field: HomeDirectory
+  null: 520341
+  str: 2
+--------------------
+Field: UserWorkstations
+  null: 520341
+  str: 2
+--------------------
+Field: LayerName
+  null: 504503
+  str: 15840
+--------------------
+Field: IpPort
+  null: 519343
+  str: 1000
+--------------------
+Field: Hash
+  null: 520305
+  str: 38
+--------------------
+Field: ImageLoaded
+  null: 472477
+  str: 47866
+--------------------
+Field: NewState
+  null: 520325
+  str: 18
+--------------------
+Field: TargetFilename
+  null: 512862
+  str: 7481
+--------------------
+Field: LogonType
+  null: 518539
+  str: 1804
+--------------------
+Field: MessageNumber
+  null: 519723
+  str: 620
+--------------------
+Field: CorruptionActionState
+  null: 520341
+  str: 2
+--------------------
+Field: CalloutName
+  null: 517737
+  str: 2606
+--------------------
+Field: IsExecutable
+  null: 518395
+  str: 1948
+--------------------
+Field: SourceHostname
+  null: 517726
+  str: 2617
+--------------------
+Field: KeysUpdated
+  null: 520337
+  str: 6
+--------------------
+Field: TaskName
+  null: 520256
+  str: 87
+--------------------
+Field: MaxRunspaces
+  null: 520339
+  str: 4
+--------------------
+Field: Domain
+  null: 332268
+  str: 188075
+--------------------
+Field: KeyLength
+  null: 519678
+  str: 665
+--------------------
+Field: AdditionalInfo
+  null: 520316
+  str: 27
+--------------------
+Field: NewThreadId
+  null: 520332
+  str: 11
+--------------------
+Field: Hashes
+  null: 469669
+  str: 50674
+--------------------
+Field: DestPort
+  null: 513839
+  str: 6504
+--------------------
+Field: CallTrace
+  null: 312467
+  str: 207876
+--------------------
+Field: ScriptBlockId
+  null: 518028
+  str: 2315
+--------------------
+Field: EventSourceId
+  null: 520337
+  str: 6
+--------------------
+Field: ReadOperation
+  null: 519648
+  str: 695
+--------------------
+Field: param11
+  null: 520342
+  str: 1
+--------------------
+Field: StartModule
+  null: 520332
+  str: 11
+--------------------
+Field: User
+  null: 454772
+  str: 65571
+--------------------
+Field: TaskInstanceId
+  null: 520341
+  str: 2
+--------------------
+Field: param6
+  null: 520342
+  str: 1
+--------------------
+Field: AllowedToDelegateTo
+  null: 520341
+  str: 2
+--------------------
+Field: PasswordHistoryLength
+  null: 520342
+  str: 1
+--------------------
+Field: Name
+  null: 520341
+  str: 2
+--------------------
+Field: EventNamespace
+  null: 520341
+  str: 2
+--------------------
+Field: MinRunspaces
+  null: 520339
+  str: 4
+--------------------
+Field: Reason
+  null: 520342
+  str: 1
+--------------------
+Field: DestinationHostname
+  null: 517727
+  str: 2616
+--------------------
+Field: Filter
+  null: 520341
+  str: 2
+--------------------
+Field: MemberSid
+  null: 520341
+  str: 2
+--------------------
+Field: ProcessID
+  null: 517512
+  str: 2831
+--------------------
+Field: ServiceType
+  null: 520335
+  str: 8
+--------------------
+Field: TargetOutboundUserName
+  null: 519703
+  str: 640
+--------------------
+Field: HiddenRecord
+  null: 515432
+  int: 4911
+--------------------
+Field: DomainBehaviorVersion
+  null: 520342
+  str: 1
+--------------------
+Field: Company
+  null: 471650
+  str: 48693
+--------------------
+Field: ImpersonationLevel
+  null: 519703
+  str: 640
+--------------------
+Field: SubStatus
+  null: 520318
+  str: 25
+--------------------
+Field: TargetProcessId
+  null: 304203
+  str: 216140
+--------------------
+Field: DirtyPages
+  null: 520337
+  str: 6
+--------------------
+Field: IntegrityLevel
+  null: 519516
+  str: 827
+--------------------
+Field: DestinationIp
+  null: 517726
+  str: 2617
+--------------------
+Field: MachineAccountQuota
+  null: 520342
+  str: 1
+--------------------
+Field: CountOfCredentialsReturned
+  null: 519645
+  str: 698
+--------------------
+Field: CallerProcessId
+  null: 519905
+  str: 438
+--------------------
+Field: ResourceManager
+  null: 520325
+  str: 18
+--------------------
+Field: UserData
+  null: 520343
+--------------------
+Field: RpcCallClientLocality
+  null: 520333
+  str: 10
+--------------------
+Field: ClassName
+  null: 520341
+  str: 2
+--------------------
+Field: updateGuid
+  null: 520340
+  str: 3
+--------------------
+Field: SubcategoryGuid
+  null: 520217
+  str: 126
+--------------------
+Field: MemberName
+  null: 520341
+  str: 2
+--------------------
+Field: Flags
+  null: 520337
+  str: 6
+--------------------
+Field: Protocol
+  null: 504488
+  str: 15855
+--------------------
+Field: TargetProcessGUID
+  null: 312467
+  str: 207876
+--------------------
+Field: TransmittedServices
+  null: 519624
+  str: 719
+--------------------
+Field: IPVersion
+  null: 520339
+  str: 4
+--------------------
+Field: UserContext
+  null: 520338
+  str: 5
+--------------------
+Field: CallerProcessName
+  null: 519905
+  str: 438
+--------------------
+Field: serviceGuid
+  null: 520342
+  str: 1
+--------------------
+Field: FilterRTID
+  null: 507109
+  str: 13234
+--------------------
+Field: SourceIp
+  null: 517726
+  str: 2617
+--------------------
+Field: Port
+  null: 520339
+  str: 4
+--------------------
+Field: FilterOrigin
+  null: 519448
+  str: 895
+--------------------
+Field: SignatureStatus
+  null: 472477
+  str: 47866
+--------------------
+Field: DomainName
+  null: 520342
+  str: 1
+--------------------
+Field: VirtualAccount
+  null: 519703
+  str: 640
+--------------------
+Field: Workstation
+  null: 520302
+  str: 41
+--------------------
+Field: ComputerAccountChange
+  null: 520342
+  str: 1
+--------------------
+Field: ApplicationPath
+  null: 520339
+  str: 4
+--------------------
+Field: DestAddress
+  null: 513839
+  str: 6504
+--------------------
+Field: AccountType
+  null: 332268
+  str: 188075
+--------------------
+Field: FailureReason
+  null: 520318
+  str: 25
+--------------------
+Field: ExecutableInfo
+  null: 515432
+  str: 4911
+--------------------
+Field: ScriptBlockText
+  null: 519724
+  str: 619
+--------------------
+Field: DisabledPrivilegeList
+  null: 517597
+  str: 2746
+--------------------
+Field: CategoryId
+  null: 520217
+  str: 126
+--------------------
+Field: AccountDomain
+  null: 520341
+  str: 2
+--------------------
+Field: SourceFile
+  null: 515432
+  str: 4911
+--------------------
+Field: SourceUser
+  null: 405760
+  str: 114583
+--------------------
+Field: HiveNameLength
+  null: 520337
+  str: 6
+--------------------
+Field: ClassId
+  null: 520341
+  str: 2
+--------------------
+Field: SourceHandleId
+  null: 512090
+  str: 8253
+--------------------
+Field: NewValueType
+  null: 520330
+  str: 13
+--------------------
+Field: SchemaFriendlyName
+  null: 520340
+  str: 3
+--------------------
+Field: Archived
+  null: 518696
+  str: 1647
+--------------------
+Field: ProcessingTimeInMilliseconds
+  null: 520340
+  str: 3
+--------------------
+Field: Signature
+  null: 472477
+  str: 47866
+--------------------
+Field: LogonId
+  null: 519516
+  str: 827
+--------------------
+Field: SidHistory
+  null: 520341
+  str: 2
+--------------------
+Field: DeviceId
+  null: 520341
+  str: 2
+--------------------
+Field: SourceIsIpv6
+  null: 517726
+  str: 2617
+--------------------
+Field: NewValue
+  null: 520330
+  str: 13
+--------------------
+Field: Status
+  null: 519594
+  str: 749
+--------------------
+Field: ParentProcessName
+  null: 519639
+  str: 704
+--------------------
+Field: ParentProcessGuid
+  null: 519516
+  str: 827
+--------------------
+Field: OperationType
+  null: 520303
+  str: 40
+--------------------
+Field: TargetHandleId
+  null: 512090
+  str: 8253
+--------------------
+Field: StartType
+  null: 520339
+  str: 4
+--------------------
+Field: KeyFilePath
+  null: 520313
+  str: 30
+--------------------
+Field: TargetDomainName
+  null: 514531
+  str: 5812
+--------------------
+Field: RemoteUserID
+  null: 513938
+  str: 6405
+--------------------
+Field: PasswordLastSet
+  null: 520341
+  str: 2
+--------------------
+Field: MessageTotal
+  null: 519723
+  str: 620
+--------------------
+Field: Resource
+  null: 520340
+  str: 3
+--------------------
+Field: VendorIds
+  null: 520341
+  str: 2
+--------------------
+Field: StartAddress
+  null: 520332
+  str: 11
+--------------------
+Field: AuditSourceName
+  null: 520337
+  str: 6
+--------------------
+Field: TargetInfo
+  null: 520308
+  str: 35
+--------------------
+Field: ClientInfo
+  null: 520310
+  str: 33
+--------------------
+Field: TargetSid
+  null: 519894
+  str: 449
+--------------------
+Field: Query
+  null: 520341
+  str: 2
+--------------------
+Field: GroupMembership
+  null: 519703
+  str: 640
+--------------------
+Field: ThreadId
+  null: 515432
+  int: 4911
+--------------------
+Field: CommandLine
+  null: 518876
+  str: 1467
+--------------------
+Field: DomainSid
+  null: 520342
+  str: 1
+--------------------
+Field: VolumeNameLength
+  null: 520033
+  str: 310
+--------------------
+Field: SourceProcessGuid
+  null: 520332
+  str: 11
+--------------------
+Field: UserId
+  null: 515432
+  str: 4911
+--------------------
+Field: VolumeGuid
+  null: 520033
+  str: 310
+--------------------
+Field: ParentCommandLine
+  null: 519516
+  str: 827
+--------------------
+Field: MiniportName
+  null: 520305
+  str: 38
+--------------------
+Field: param2
+  null: 520185
+  str: 158
+--------------------
+Field: ExtraDataOffset
+  null: 515432
+  int: 4911
+--------------------
+Field: Signed
+  null: 472477
+  str: 47866
+--------------------
+Field: TokenElevationType
+  null: 519639
+  str: 704
+--------------------
+Field: Device
+  null: 518388
+  str: 1955
+--------------------
+Field: updateRevisionNumber
+  null: 520340
+  str: 3
+--------------------
+Field: TargetProcessGuid
+  null: 520332
+  str: 11
+--------------------
+Field: TargetObject
+  null: 384907
+  str: 135436
+--------------------
+Field: MixedDomainMode
+  null: 520342
+  str: 1
+--------------------
+Field: Direction
+  null: 513839
+  str: 6504
+--------------------
+Field: EnginePID
+  null: 520341
+  str: 2
+--------------------
+Field: TargetOutboundDomainName
+  null: 519703
+  str: 640
+--------------------
+Field: MinPasswordLength
+  null: 520342
+  str: 1
+--------------------

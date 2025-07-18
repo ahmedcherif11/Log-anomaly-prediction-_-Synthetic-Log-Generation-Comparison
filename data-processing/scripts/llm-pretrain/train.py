@@ -1,7 +1,9 @@
 import argparse
+import json
 import os
 from datetime import datetime
 import datasets
+from datasets import  Features, Value ,Sequence
 import torch
 from peft import LoraConfig, TaskType
 from transformers import (
@@ -52,7 +54,16 @@ def main(args_pars):
     if args_pars.valid_file and os.path.exists(args_pars.valid_file):
         data_files["validation"] = args_pars.valid_file
 
-    dataset = datasets.load_dataset("json", data_files=data_files, field=None)
+    with open("features.json") as f:
+        feat_dict = json.load(f)
+
+    # Build initial features from the dict
+    features = Features({k: Value(v["dtype"]) for k, v in feat_dict.items()})
+
+    # Add 'tags' as a sequence of strings
+    features['tags'] = Sequence(feature=Value(dtype='string'))
+    
+    dataset = datasets.load_dataset("json", data_files=data_files, field=None, features=features)
     train_data = dataset["train"]
     eval_data = dataset["validation"] if "validation" in dataset else None
 
