@@ -54,7 +54,7 @@ def main(args_pars):
     if args_pars.valid_file and os.path.exists(args_pars.valid_file):
         data_files["validation"] = args_pars.valid_file
 
-    with open("features.json") as f:
+    with open("/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain") as f:
         feat_dict = json.load(f)
 
     # Build initial features from the dict
