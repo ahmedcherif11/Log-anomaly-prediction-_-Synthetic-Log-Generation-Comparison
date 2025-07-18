@@ -2,7 +2,7 @@ import json
 from collections import defaultdict
 
 # Path to your JSONL file
-filename = "/scratch/cherif/dataset/data_fixed_shuffled.jsonl"
+filename = "/scratch/cherif/dataset/data.jsonl"
 
 # Dictionary to track types seen for each field
 field_types = defaultdict(set)
