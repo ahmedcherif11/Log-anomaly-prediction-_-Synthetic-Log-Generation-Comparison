@@ -17,7 +17,7 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 # ---- Variables ----
 
 # Path to your processed JSONL dataset (pre-merged, cleaned, shuffled)
-DATASET="$SCRATCH/dataset/data_fixed.jsonl"
+DATASET="$SCRATCH/dataset/data_fixed_shuffled.jsonl"
 # Path where you want to store results
 OUTPUT_DIR="$SCRATCH/models/windowslog-pretrain"
 # Model name (local cache or HuggingFace)

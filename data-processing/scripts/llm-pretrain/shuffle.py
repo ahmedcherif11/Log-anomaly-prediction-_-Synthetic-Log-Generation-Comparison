@@ -1,7 +1,9 @@
 import random
 
-input_path = "data_fixed.jsonl"
-output_path = "data_fixed_shuffled.jsonl"
+
+
+input_path ="/scratch/cherif/dataset/data_fixed.jsonl"
+output_path = "/scratch/cherif/dataset/data_fixed_shuffled.jsonl"
 
 with open(input_path, "r") as infile:
     lines = infile.readlines()
