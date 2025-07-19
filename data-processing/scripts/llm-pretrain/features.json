@@ -42,7 +42,6 @@
   "RestrictedSidCount": "string",
   "ResourceAttributes": "string",
   "Hostname": "string",
-  "tags": ["string"],
   "UserName": "string",
   "MapDescription": "string",
   "RemoteHost": "string",
