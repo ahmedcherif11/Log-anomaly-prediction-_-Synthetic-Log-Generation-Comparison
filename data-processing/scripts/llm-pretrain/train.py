@@ -57,11 +57,11 @@ def main(args_pars):
     with open("/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/features.json") as f:
         feat_dict = json.load(f)
 
-    # Build initial features from the dict
-    features = Features({k: Value(v["dtype"]) for k, v in feat_dict.items()})
+    features_dict = {k: Value(v) for k, v in feat_dict.items()}
+    # Add 'tags' if missing
+    features_dict['tags'] = Sequence(Value("string"))
 
-    # Add 'tags' as a sequence of strings
-    features['tags'] = Sequence(feature=Value(dtype='string'))
+    features = Features(features_dict)
     
     dataset = datasets.load_dataset("json", data_files=data_files, field=None, features=features)
     train_data = dataset["train"]
