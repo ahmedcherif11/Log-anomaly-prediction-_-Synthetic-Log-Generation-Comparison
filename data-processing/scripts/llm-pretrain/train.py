@@ -69,11 +69,24 @@ def main(args_pars):
 
     def preprocess_function(examples):
         import json
-        if isinstance(examples["text"][0], dict):
-            texts = [json.dumps(e) for e in examples["text"]]
-        else:
-            texts = [str(e) for e in examples["text"]]
-        return tokenizer(texts, truncation=True, padding="max_length", max_length=args_pars.context)
+        # On prépare une liste vide pour stocker chaque log sous forme de string
+        logs = []
+        # On calcule combien d'exemples (lignes) il y a dans ce batch
+        num_examples = len(next(iter(examples.values())))
+        # Pour chaque ligne du batch :
+        for i in range(num_examples):
+            # On construit un dictionnaire {colonne: valeur} pour la i-ème ligne
+            row = {k: v[i] for k, v in examples.items()}
+            # On convertit ce dictionnaire en string JSON (toutes les infos du log sont là)
+            logs.append(json.dumps(row, ensure_ascii=False))
+        # On applique le tokenizer sur chaque string (troncature/padding si besoin)
+        return tokenizer(
+            logs,
+            truncation=True,
+            padding="max_length",
+            max_length=args_pars.context
+        )
+
 
     # Tokenize
     train_data = train_data.map(
