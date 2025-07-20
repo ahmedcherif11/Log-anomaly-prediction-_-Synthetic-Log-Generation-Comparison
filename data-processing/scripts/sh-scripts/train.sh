@@ -4,12 +4,18 @@
 #SBATCH --mem=32000                  # More RAM for big batches/context
 #SBATCH --cpus-per-task=16           # Use more CPUs for dataloader
 #SBATCH --output=$SCRATCH/models/slurm-logs/%N-%j.out
-#SBATCH --time=20:00:00            # 1 day max
+#SBATCH --time=04:00:00            # 1 day max
 #SBATCH --account=def-dmouheb  
 #SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
 #SBATCH --mail-type=ALL    
 
 # ---- Environment Setup ----
+export MASTER_PORT=29505
+export MASTER_ADDR=localhost
+export NCCL_DEBUG=INFO
+echo "MASTER_PORT=$MASTER_PORT"
+echo "MASTER_ADDR=$MASTER_ADDR"
+echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
 
 source ./statics/environment.sh "$HOME/training_env" offline
 export CUDA_VISIBLE_DEVICES=0,1,2,3
