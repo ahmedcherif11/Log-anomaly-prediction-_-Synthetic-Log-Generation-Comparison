@@ -63,7 +63,7 @@ def main(args_pars):
 
     features = Features(features_dict)
     
-    dataset = datasets.load_dataset("json", data_files=data_files, field=None, features=features,streaming=True)
+    dataset = datasets.load_dataset("json", data_files=data_files, field=None, features=features)
     train_data = dataset["train"]
     eval_data = dataset["validation"] if "validation" in dataset else None
 

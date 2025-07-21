@@ -10,15 +10,15 @@
 #SBATCH --mail-type=ALL    
 
 # ---- Environment Setup ----
-export MASTER_PORT=29505
-export MASTER_ADDR=localhost
-export NCCL_DEBUG=INFO
-export TORCH_DISTRIBUTED_DEBUG=DETAIL
 
 
 source ./statics/environment.sh "$HOME/training_env" offline
 export CUDA_VISIBLE_DEVICES=0,1,2,3
  
+export MASTER_PORT=29505
+export MASTER_ADDR=localhost
+export NCCL_DEBUG=INFO
+export TORCH_DISTRIBUTED_DEBUG=DETAIL
 
 echo "MASTER_PORT=$MASTER_PORT"
 echo "MASTER_ADDR=$MASTER_ADDR"
