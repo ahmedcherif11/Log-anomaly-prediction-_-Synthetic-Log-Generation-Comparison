@@ -66,11 +66,17 @@ def main(args_pars):
     dataset = datasets.load_dataset("json", data_files=data_files, field=None, features=features)
     train_data = dataset["train"]
     eval_data = dataset["validation"] if "validation" in dataset else None
-    
-    print("Train dataset loaded:", train_data)
-    print("Dataset length:", len(train_data))
-    print("Columns:", train_data.column_names)
-    print("First row:", train_data[0])
+
+    # Debugging info
+    import psutil
+    print("==== DEBUG: Dataset loaded ====")
+    print("Train dataset type:", type(train_data))
+    print("Train dataset length:", len(train_data))
+    print("Train dataset columns:", train_data.column_names)
+    print("RAM used (GB):", psutil.Process(os.getpid()).memory_info().rss / 1e9)
+    print("First train_data row (repr):", repr(train_data[0]))
+    print("First train_data row (json):", json.dumps(train_data[0], ensure_ascii=False))
+    print("===============================")
 
 
     def preprocess_function(examples):
@@ -95,13 +101,36 @@ def main(args_pars):
 
 
     # Tokenize
-    train_data = train_data.map(
-        preprocess_function, batched=True, remove_columns=train_data.column_names
-    )
-    if eval_data:
-        eval_data = eval_data.map(
-            preprocess_function, batched=True, remove_columns=eval_data.column_names
+    try:
+        train_data = train_data.map(
+            preprocess_function, batched=True, remove_columns=train_data.column_names
         )
+    except Exception as e:
+        print("Exception during train_data.map:", e)
+        import traceback; traceback.print_exc()
+        exit(1)
+
+    if eval_data:
+        try:
+            eval_data = eval_data.map(
+                preprocess_function, batched=True, remove_columns=eval_data.column_names
+            )
+        except Exception as e:
+            print("Exception during eval_data.map:", e)
+            import traceback; traceback.print_exc()
+            exit(1)
+  # ---- DEBUG APRÈS TOKENIZATION ----
+    print("==== DEBUG: Dataset after tokenization ====")
+    if hasattr(train_data, 'shape'):
+        print("Shape after map:", train_data.shape)
+    print("Train dataset length:", len(train_data))
+    print("Train dataset columns:", train_data.column_names)
+    try:
+        print("First row after tokenization:", train_data[0])
+    except Exception as e:
+        print("Could not print first tokenized row:", e)
+    print("RAM used (GB):", psutil.Process(os.getpid()).memory_info().rss / 1e9)
+    print("===============================")
 
     # Training args
     train_args = SFTConfig(
