@@ -66,6 +66,12 @@ def main(args_pars):
     dataset = datasets.load_dataset("json", data_files=data_files, field=None, features=features)
     train_data = dataset["train"]
     eval_data = dataset["validation"] if "validation" in dataset else None
+    
+    print("Train dataset loaded:", train_data)
+    print("Dataset length:", len(train_data))
+    print("Columns:", train_data.column_names)
+    print("First row:", train_data[0])
+
 
     def preprocess_function(examples):
         import json
