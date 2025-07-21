@@ -13,12 +13,16 @@
 export MASTER_PORT=29505
 export MASTER_ADDR=localhost
 export NCCL_DEBUG=INFO
-echo "MASTER_PORT=$MASTER_PORT"
-echo "MASTER_ADDR=$MASTER_ADDR"
-echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
+export TORCH_DISTRIBUTED_DEBUG=DETAIL
+
 
 source ./statics/environment.sh "$HOME/training_env" offline
 export CUDA_VISIBLE_DEVICES=0,1,2,3
+ 
+
+echo "MASTER_PORT=$MASTER_PORT"
+echo "MASTER_ADDR=$MASTER_ADDR"
+echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
 
 # ---- Variables ----
 
@@ -43,15 +47,20 @@ echo "Starting LLM pretraining on Windows Event Logs..."
 cd "$OUTPUT_DIR" || exit
 
 # If using Accelerate
-time accelerate launch --config_file="$PROJ/config/train_config.yaml" /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/train.py \
-  --model "$MODEL_NAME" \
-  --train-file "$DATASET" \
-  --run-name "$RUN_NAME" \
-  --batch 1 \
-  --grad 8 \
-  --context 1024 \
-  --root "$OUTPUT_DIR" \
-  --checkpoint  
+time accelerate launch \
+  --config_file="$PROJ/config/train_config.yaml" \
+  --main_process_port $MASTER_PORT \
+  --num_processes 4 \
+  --num_machines 1 \
+  /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/train.py \
+    --model "$MODEL_NAME" \
+    --train-file "$DATASET" \
+    --run-name "$RUN_NAME" \
+    --batch 1 \
+    --grad 8 \
+    --context 1024 \
+    --root "$OUTPUT_DIR" \
+    --checkpoint  
 
 # ---- Save and Archive ----
 
