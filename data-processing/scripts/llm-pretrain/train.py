@@ -46,6 +46,8 @@ def main(args_pars):
     )
     tokenizer = AutoTokenizer.from_pretrained(args_pars.model)
     tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = 'right'
+
 
     # Load data (expects .jsonl, one log per line)
     data_files = {}
@@ -119,6 +121,7 @@ def main(args_pars):
             print("Exception during eval_data.map:", e)
             import traceback; traceback.print_exc()
             exit(1)
+
   # ---- DEBUG APRÈS TOKENIZATION ----
     print("==== DEBUG: Dataset after tokenization ====")
     if hasattr(train_data, 'shape'):
@@ -168,7 +171,7 @@ def main(args_pars):
         train_dataset=train_data,
         #eval_dataset=eval_data,
         args=train_args,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
         formatting_func=None,
     )
 
