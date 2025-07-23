@@ -4,7 +4,7 @@
 #SBATCH --mem=150000                  # More RAM for big batches/context
 #SBATCH --cpus-per-task=16           # Use more CPUs for dataloader
 #SBATCH --output=$SCRATCH/models/slurm-logs/%N-%j.out
-#SBATCH --time=02:30:00            # 1 day max
+#SBATCH --time=01:30:00            # 1 day max
 #SBATCH --account=def-dmouheb  
 #SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
 #SBATCH --mail-type=ALL    
@@ -47,7 +47,7 @@ echo "Run saved in $SCRATCH/models/run/$RUN"
 mkdir -p "$SCRATCH/models/run/$RUN"
 ############### Launching domain-specific training script ###############
 
-python "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/generate-dta.py" --dataset "$SCRATCH/dataset/data.json" --out "$SCRATCH/dataset/dta_train" 
+python "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/generate-dta.py" --dataset "$SCRATCH/dataset/data.jsonl" --out "$SCRATCH/dataset/dta_train" 
 time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$SCRATCH/dataset/dta_train" --model "meta-llama/Meta-Llama-3.1-8B" --run-name "$RUN" 
 
 
