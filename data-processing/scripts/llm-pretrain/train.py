@@ -13,8 +13,8 @@ from trl import SFTTrainer, SFTConfig, get_kbit_device_map
 from transformers.trainer_utils import get_last_checkpoint
 from accelerate import Accelerator
 
-def main(args_pars, run_path, output_dir, save_run, accelerator):
-    # --- 1. Quantization config (QLoRA) ---
+def main(args_pars, run_path, output_dir, save_run, accelerator, device):
+    # Quantization config (QLoRA)
     nf4_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
@@ -23,34 +23,35 @@ def main(args_pars, run_path, output_dir, save_run, accelerator):
         bnb_4bit_quant_storage=torch.float32,
     )
 
-    # --- 2. LoRA config ---
+    # LoRA config
     peft_config = LoraConfig(
         r=8, lora_alpha=16, lora_dropout=0.1, inference_mode=False, bias="none",
         task_type=TaskType.CAUSAL_LM, target_modules="all-linear",
     )
 
-    # --- 3. Directory setup ---
+    # Directory setup is already done outside main(), so just ensure dirs exist
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(save_run, exist_ok=True)
 
-    # --- 4. Load model/tokenizer (no FSDP wrapping ici !) ---
+    # --- [NEW] Model loaded on correct device for FSDP sharding ---
     model = AutoModelForCausalLM.from_pretrained(
         args_pars.model,
         torch_dtype=torch.float16,
         quantization_config=nf4_config,
         attn_implementation="sdpa",
-        device_map=None,         # ← NE PAS utiliser get_kbit_device_map ici ! (Accelerate gère la distrib)
+        device_map=None,            # IMPORTANT: do NOT use device_map!
         local_files_only=True
-    )
+    ).to(device)                   # <----- Critical line for FSDP!
+    # ---------------------------------------------------------------
+
     tokenizer = AutoTokenizer.from_pretrained(args_pars.model, local_files_only=True)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = 'right'
-
-    # --- 5. PREPARE MODEL FOR DISTRIBUTED/FSDP via Accelerate ---
+    # --- PREPARE MODEL FOR DISTRIBUTED/FSDP via Accelerate ---
     # Cette ligne est cruciale : c’est elle qui wrappe le modèle avec FSDP, DDP, etc. selon la config.
     model = accelerator.prepare(model)
 
-    # --- 6. DATA LOADING ---
+    # --- DATA LOADING ---
     data_files = {}
     if os.path.exists(args_pars.train_file):
         data_files["train"] = args_pars.train_file
@@ -67,7 +68,6 @@ def main(args_pars, run_path, output_dir, save_run, accelerator):
     train_data = dataset["train"]
     eval_data = dataset["validation"] if "validation" in dataset else None
 
-    # --- 7. DEBUG: After dataset load ---
     import psutil
     accelerator.print("==== DEBUG: Dataset loaded ====")
     accelerator.print("Train dataset type:", type(train_data))
@@ -76,7 +76,6 @@ def main(args_pars, run_path, output_dir, save_run, accelerator):
     accelerator.print("===============================")
     accelerator.print(torch.cuda.memory_summary(device=None, abbreviated=False))
 
-    # --- 8. TOKENIZATION ---
     def preprocess_function(examples):
         logs = []
         num_examples = len(next(iter(examples.values())))
@@ -119,7 +118,6 @@ def main(args_pars, run_path, output_dir, save_run, accelerator):
     accelerator.print("RAM used (GB):", psutil.Process(os.getpid()).memory_info().rss / 1e9)
     accelerator.print("===============================")
 
-    # --- 9. TRAINING ARGS ---
     train_args = SFTConfig(
         do_train=True,
         per_device_train_batch_size=args_pars.batch,
@@ -145,7 +143,6 @@ def main(args_pars, run_path, output_dir, save_run, accelerator):
         packing=True,
     )
 
-    # --- 10. SFT TRAINER ---
     trainer = SFTTrainer(
         model=model,
         peft_config=peft_config,
@@ -167,7 +164,6 @@ def main(args_pars, run_path, output_dir, save_run, accelerator):
         f"\tstart_time : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
     )
 
-    # --- 11. CHECKPOINT LOGIC ---
     resume_from = get_last_checkpoint(output_dir) if args_pars.checkpoint else None
     if args_pars.checkpoint and resume_from:
         trainer.accelerator.print(f"Resuming from checkpoint: {resume_from}")
@@ -212,6 +208,12 @@ if __name__ == "__main__":
     )
     logging.disable_progress_bar()
     datasets.disable_progress_bars()
-    main(args_pars, run_path, output_dir, save_run, accelerator)
+
+    # ----------- [NEW] Set device by rank for FSDP -----------
+    local_rank = int(os.environ.get("LOCAL_RANK", 0))
+    device = torch.device(f"cuda:{local_rank}")
+    torch.cuda.set_device(device)
+    # ----------------------------------------------------------
+
+    main(args_pars, run_path, output_dir, save_run, accelerator, device)
     accelerator.end_training()
-    
