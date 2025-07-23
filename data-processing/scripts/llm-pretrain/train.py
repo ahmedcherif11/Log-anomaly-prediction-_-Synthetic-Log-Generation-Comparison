@@ -3,18 +3,18 @@ import json
 import os
 from datetime import datetime
 import datasets
-from datasets import  Features, Value ,Sequence
+from datasets import Features, Value, Sequence
 import torch
 from peft import LoraConfig, TaskType
 from transformers import (
-    AutoTokenizer, BitsAndBytesConfig, logging, AutoModelForCausalLM, TrainerState
+    AutoTokenizer, BitsAndBytesConfig, logging, AutoModelForCausalLM
 )
 from trl import SFTTrainer, SFTConfig, get_kbit_device_map
 from transformers.trainer_utils import get_last_checkpoint
 from accelerate import Accelerator
 
-def main(args_pars):
-    # Quantization config (QLoRA)
+def main(args_pars, run_path, output_dir, save_run, accelerator):
+    # --- 1. Quantization config (QLoRA) ---
     nf4_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
@@ -23,33 +23,34 @@ def main(args_pars):
         bnb_4bit_quant_storage=torch.float32,
     )
 
-    # LoRA config
+    # --- 2. LoRA config ---
     peft_config = LoraConfig(
         r=8, lora_alpha=16, lora_dropout=0.1, inference_mode=False, bias="none",
         task_type=TaskType.CAUSAL_LM, target_modules="all-linear",
     )
 
-    # Directory setup
-    run_path = f'{args_pars.root}/{args_pars.rname}'
-    output_dir = f'{run_path}/checkpoint/'
-    save_run = f'{run_path}/model/'
+    # --- 3. Directory setup ---
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(save_run, exist_ok=True)
 
-    # Load model/tokenizer
+    # --- 4. Load model/tokenizer (no FSDP wrapping ici !) ---
     model = AutoModelForCausalLM.from_pretrained(
         args_pars.model,
         torch_dtype=torch.float16,
         quantization_config=nf4_config,
         attn_implementation="sdpa",
-        device_map=get_kbit_device_map()
+        device_map=None,         # ← NE PAS utiliser get_kbit_device_map ici ! (Accelerate gère la distrib)
+        local_files_only=True
     )
-    tokenizer = AutoTokenizer.from_pretrained(args_pars.model)
+    tokenizer = AutoTokenizer.from_pretrained(args_pars.model, local_files_only=True)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = 'right'
 
+    # --- 5. PREPARE MODEL FOR DISTRIBUTED/FSDP via Accelerate ---
+    # Cette ligne est cruciale : c’est elle qui wrappe le modèle avec FSDP, DDP, etc. selon la config.
+    model = accelerator.prepare(model)
 
-    # Load data (expects .jsonl, one log per line)
+    # --- 6. DATA LOADING ---
     data_files = {}
     if os.path.exists(args_pars.train_file):
         data_files["train"] = args_pars.train_file
@@ -58,42 +59,30 @@ def main(args_pars):
 
     with open("/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/features.json") as f:
         feat_dict = json.load(f)
-
     features_dict = {k: Value(v) for k, v in feat_dict.items()}
-    # Add 'tags' if missing
     features_dict['tags'] = Sequence(Value("string"))
-
     features = Features(features_dict)
-    
+
     dataset = datasets.load_dataset("json", data_files=data_files, field=None, features=features)
     train_data = dataset["train"]
     eval_data = dataset["validation"] if "validation" in dataset else None
 
-    # Debugging info
+    # --- 7. DEBUG: After dataset load ---
     import psutil
-    print("==== DEBUG: Dataset loaded ====")
-    print("Train dataset type:", type(train_data))
-    print("Train dataset length:", len(train_data))
-    print("Train dataset columns:", train_data.column_names)
-    print("RAM used (GB):", psutil.Process(os.getpid()).memory_info().rss / 1e9)
-    print("First train_data row (repr):", repr(train_data[0]))
-    print("First train_data row (json):", json.dumps(train_data[0], ensure_ascii=False))
-    print("===============================")
+    accelerator.print("==== DEBUG: Dataset loaded ====")
+    accelerator.print("Train dataset type:", type(train_data))
+    accelerator.print("Train dataset length:", len(train_data))
+    accelerator.print("RAM used (GB):", psutil.Process(os.getpid()).memory_info().rss / 1e9)
+    accelerator.print("===============================")
+    accelerator.print(torch.cuda.memory_summary(device=None, abbreviated=False))
 
-
+    # --- 8. TOKENIZATION ---
     def preprocess_function(examples):
-        import json
-        # On prépare une liste vide pour stocker chaque log sous forme de string
         logs = []
-        # On calcule combien d'exemples (lignes) il y a dans ce batch
         num_examples = len(next(iter(examples.values())))
-        # Pour chaque ligne du batch :
         for i in range(num_examples):
-            # On construit un dictionnaire {colonne: valeur} pour la i-ème ligne
             row = {k: v[i] for k, v in examples.items()}
-            # On convertit ce dictionnaire en string JSON (toutes les infos du log sont là)
             logs.append(json.dumps(row, ensure_ascii=False))
-        # On applique le tokenizer sur chaque string (troncature/padding si besoin)
         return tokenizer(
             logs,
             truncation=True,
@@ -101,41 +90,36 @@ def main(args_pars):
             max_length=args_pars.context
         )
 
-
-    # Tokenize
     try:
         train_data = train_data.map(
             preprocess_function, batched=True, remove_columns=train_data.column_names
         )
     except Exception as e:
-        print("Exception during train_data.map:", e)
+        accelerator.print("Exception during train_data.map:", e)
         import traceback; traceback.print_exc()
         exit(1)
-
     if eval_data:
         try:
             eval_data = eval_data.map(
                 preprocess_function, batched=True, remove_columns=eval_data.column_names
             )
         except Exception as e:
-            print("Exception during eval_data.map:", e)
+            accelerator.print("Exception during eval_data.map:", e)
             import traceback; traceback.print_exc()
             exit(1)
 
-  # ---- DEBUG APRÈS TOKENIZATION ----
-    print("==== DEBUG: Dataset after tokenization ====")
+    accelerator.print("==== DEBUG: Dataset after tokenization ====")
     if hasattr(train_data, 'shape'):
-        print("Shape after map:", train_data.shape)
-    print("Train dataset length:", len(train_data))
-    print("Train dataset columns:", train_data.column_names)
+        accelerator.print("Shape after map:", train_data.shape)
+    accelerator.print("Train dataset length:", len(train_data))
     try:
-        print("First row after tokenization:", train_data[0])
+        accelerator.print("First row after tokenization:", train_data[0])
     except Exception as e:
-        print("Could not print first tokenized row:", e)
-    print("RAM used (GB):", psutil.Process(os.getpid()).memory_info().rss / 1e9)
-    print("===============================")
+        accelerator.print("Could not print first tokenized row:", e)
+    accelerator.print("RAM used (GB):", psutil.Process(os.getpid()).memory_info().rss / 1e9)
+    accelerator.print("===============================")
 
-    # Training args
+    # --- 9. TRAINING ARGS ---
     train_args = SFTConfig(
         do_train=True,
         per_device_train_batch_size=args_pars.batch,
@@ -143,16 +127,12 @@ def main(args_pars):
         gradient_accumulation_steps=args_pars.grad,
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={'use_reentrant': False},
-        #eval_strategy="steps",
-        #eval_steps=100,
-        #fp16_full_eval=True,
         logging_strategy="steps",
         logging_steps=20,
         save_strategy="steps",
         save_steps=200,
         save_total_limit=5,
         lr_scheduler_type="cosine",
-        #load_best_model_at_end=True,
         warmup_steps=50,
         num_train_epochs=args_pars.epochs,
         report_to="wandb",
@@ -165,11 +145,12 @@ def main(args_pars):
         packing=True,
     )
 
+    # --- 10. SFT TRAINER ---
     trainer = SFTTrainer(
         model=model,
         peft_config=peft_config,
         train_dataset=train_data,
-        #eval_dataset=eval_data,
+        eval_dataset=eval_data,
         args=train_args,
         processing_class=tokenizer,
         formatting_func=None,
@@ -186,18 +167,16 @@ def main(args_pars):
         f"\tstart_time : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
     )
 
-    # --- Checkpoint logic ---
-    resume_from = None
-    if args_pars.checkpoint:
-        resume_from = get_last_checkpoint(output_dir)
-        if resume_from is not None:
-            trainer.accelerator.print(f"Resuming from checkpoint: {resume_from}")
-        else:
-            trainer.accelerator.print("No checkpoint found, starting from scratch.")
+    # --- 11. CHECKPOINT LOGIC ---
+    resume_from = get_last_checkpoint(output_dir) if args_pars.checkpoint else None
+    if args_pars.checkpoint and resume_from:
+        trainer.accelerator.print(f"Resuming from checkpoint: {resume_from}")
+    elif args_pars.checkpoint:
+        trainer.accelerator.print("No checkpoint found, starting from scratch.")
 
     trainer.train(resume_from_checkpoint=resume_from)
-
     trainer.save_model(save_run)
+    tokenizer.save_pretrained(save_run)
 
 def setup_parser():
     parser = argparse.ArgumentParser()
@@ -216,20 +195,23 @@ def setup_parser():
 
 if __name__ == "__main__":
     args_pars = setup_parser().parse_args()
-    logging.disable_progress_bar()
-    datasets.disable_progress_bars()
-
+    run_path = f'{args_pars.root}/{args_pars.rname}'
+    output_dir = f'{run_path}/checkpoint/'
+    save_run = f'{run_path}/model/'
     accelerator = Accelerator(log_with="wandb")
     accelerator.init_trackers(
         'LogAP-LLM',
         init_kwargs={
             "wandb": {
                 "mode": "offline",
-                'dir': f'{args_pars.root}/{args_pars.rname}/',
+                'dir': f'{run_path}/',
                 "resume": "auto" if args_pars.checkpoint else None,
                 "name": args_pars.rname
             }
         }
     )
-    main(args_pars)
+    logging.disable_progress_bar()
+    datasets.disable_progress_bars()
+    main(args_pars, run_path, output_dir, save_run, accelerator)
     accelerator.end_training()
+    
