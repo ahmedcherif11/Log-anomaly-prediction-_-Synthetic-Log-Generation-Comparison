@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:v100l:4	           # Request 4 V100 GPUs
-#SBATCH --mem=150000                  # More RAM for big batches/context
+#SBATCH --mem=80000                  # More RAM for big batches/context
 #SBATCH --cpus-per-task=16           # Use more CPUs for dataloader
 #SBATCH --output=$SCRATCH/models/slurm-logs/%N-%j.out
 #SBATCH --time=01:30:00            # 1 day max
