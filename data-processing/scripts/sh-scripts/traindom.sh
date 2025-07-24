@@ -48,7 +48,7 @@ mkdir -p "$SCRATCH/models/run/$RUN"
 ############### Launching domain-specific training script ###############
 
 python "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/generate-dta.py" --dataset "$SCRATCH/dataset/data.jsonl" --out "$SCRATCH/dataset/dta_train" 
-time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$SCRATCH/dataset/dta_train" --model "meta-llama/Meta-Llama-3.1-8B" --run-name "$RUN" 
+time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/traindebug.py" --dataset "$SCRATCH/dataset/dta_train" --model "meta-llama/Meta-Llama-3.1-8B" --run-name "$RUN" 
 
 
 
