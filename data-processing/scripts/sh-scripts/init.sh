@@ -28,7 +28,9 @@ source "$ENV/bin/activate"
 
 echo "Installing Python dependencies..."
 pip install --no-index --upgrade pip
-pip install --no-index torch transformers datasets wandb bitsandbytes peft accelerate deepspeed trl packaging ninja pyyaml matplotlib seaborn
+pip install torch transformers datasets bitsandbytes peft deepspeed \
+            accelerate==1.2.1 trl==0.13.0 wandb==0.18.6 \
+            packaging ninja pyyaml matplotlib seaborn pandas
 
 #############################
 # 4. Download HF Model (if provided)
