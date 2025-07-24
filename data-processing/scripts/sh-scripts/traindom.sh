@@ -15,6 +15,14 @@
 
 source ./statics/environment.sh "$HOME/training_env" offline
 export CUDA_VISIBLE_DEVICES=0,1,2,3
+export MASTER_PORT=29505
+export MASTER_ADDR=localhost
+export NCCL_DEBUG=INFO
+export TORCH_DISTRIBUTED_DEBUG=DETAIL
+
+echo "MASTER_PORT=$MASTER_PORT"
+echo "MASTER_ADDR=$MASTER_ADDR"
+echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
 
 ############### Launching data preparation script ###############
 
@@ -47,8 +55,7 @@ echo "Run saved in $SCRATCH/models/run/$RUN"
 mkdir -p "$SCRATCH/models/run/$RUN"
 ############### Launching domain-specific training script ###############
 
-python "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/generate-dta.py" --dataset "$SCRATCH/dataset/data.jsonl" --out "$SCRATCH/dataset/dta_train" 
-time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/traindebug.py" --dataset "$SCRATCH/dataset/dta_train" --model "meta-llama/Meta-Llama-3.1-8B" --run-name "$RUN" 
+time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$SCRATCH/dataset/dta_train" --model "meta-llama/Meta-Llama-3.1-8B" --run-name "$RUN" 
 
 
 

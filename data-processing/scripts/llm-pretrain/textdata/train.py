@@ -12,7 +12,17 @@ from transformers.trainer_utils import get_last_checkpoint
 from accelerate import Accelerator
 
 
-
+print(f"RANK={os.environ.get('RANK')}, LOCAL_RANK={os.environ.get('LOCAL_RANK')}, CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES')}", flush=True)
+def early_debug_log(msg):
+    try:
+        rank = int(os.environ.get("RANK", 0))
+    except Exception:
+        rank = "NA"
+    try:
+        local_rank = int(os.environ.get("LOCAL_RANK", 0))
+    except Exception:
+        local_rank = "NA"
+    print(f"[RANK={rank} LOCAL_RANK={local_rank} PID={os.getpid()}] {msg}", flush=True)
 
 def main():
     # Quantization configuration
@@ -53,6 +63,8 @@ def main():
     tokenizer.pad_token = tokenizer.eos_token
 
     # Load data
+    if not os.path.exists(args_pars.dataset):
+        raise FileNotFoundError(f"Dataset path does not exist: {args_pars.dataset}")
     data = datasets.load_from_disk(args_pars.dataset)
 
     # Debugging info
@@ -167,6 +179,9 @@ def setup_parser():
 
 
 if __name__ == "__main__":
+    early_debug_log("Script startup: __main__")
+
+
     args_pars = setup_parser().parse_args()
 
     run_path = f'{args_pars.root}/{args_pars.rname}'
