@@ -35,7 +35,6 @@ propcache==0.2.1+computecanada
 protobuf==5.29.3+computecanada
 ptyprocess==0.7.0+computecanada
 pure_eval==0.2.3+computecanada
-pyarrow==19.0.1
 pydantic==2.10.4+computecanada
 pydantic_core==2.27.2+computecanada
 pygments==2.19.1+computecanada
