@@ -28,9 +28,7 @@ source "$ENV/bin/activate"
 
 echo "Installing Python dependencies..."
 pip install --no-index --upgrade pip
-pip install torch transformers datasets bitsandbytes peft deepspeed \
-            accelerate==1.2.1 trl==0.13.0 wandb==0.18.6 \
-            packaging ninja pyyaml matplotlib seaborn pandas
+pip install --no-index --upgrade -r /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/requirement.txt
 
 #############################
 # 4. Download HF Model (if provided)
