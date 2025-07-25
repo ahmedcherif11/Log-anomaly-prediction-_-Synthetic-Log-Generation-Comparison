@@ -23,7 +23,7 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 echo "Preparing data for ftd..."
 #time python "$PROJ/py_scripts/generate_ds.py" --dataset "$SCRATCH/datasets/WINDOWSLOG.jsonl" --out "$SLURM_TMPDIR/datasets/ftd"
 
-mkdir -p "$SLURM_TMPDIR/datasets/ftd"
+mkdir -p "$SCRATCH/datasets/ftd"
 tar xzf "$SCRATCH/datasets/WINDOWSLOG.tar.gz" -C "$SCRATCH/datasets/ftd"
 echo "Data $SCRATCH/datasets/WINDOWSLOG.tar.gz extracted to $SCRATCH/datasets/ftd"
 
