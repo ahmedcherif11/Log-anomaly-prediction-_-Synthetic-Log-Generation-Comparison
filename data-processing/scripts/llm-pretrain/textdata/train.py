@@ -118,7 +118,7 @@ def main():
         train_dataset=data['train'],
         eval_dataset=data['test'],
         args=args,
-        processing_class=tokenizer,
+        tokenizer=tokenizer,
     )
 
     # Verify if checkpoint needs to be saved (due to parallelization issues)
