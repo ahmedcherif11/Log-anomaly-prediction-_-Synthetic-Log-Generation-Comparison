@@ -24,8 +24,8 @@ echo "Preparing data for ftd..."
 #time python "$PROJ/py_scripts/generate_ds.py" --dataset "$SCRATCH/datasets/WINDOWSLOG.jsonl" --out "$SLURM_TMPDIR/datasets/ftd"
 
 mkdir -p "$SLURM_TMPDIR/datasets/ftd"
-tar xzf "$SCRATCH/datasets/WINDOWSLOG.tar.gz" -C "$SLURM_TMPDIR/datasets/ftd"
-echo "Data $SCRATCH/datasets/WINDOWSLOG.tar.gz extracted to $SLURM_TMPDIR/datasets/ftd"
+tar xzf "$SCRATCH/datasets/WINDOWSLOG.tar.gz" -C "$SCRATCH/datasets/ftd"
+echo "Data $SCRATCH/datasets/WINDOWSLOG.tar.gz extracted to $SCRATCH/datasets/ftd"
 
 echo "Starting training..."
 mkdir -p "$SCRATCH/models/run" && cd "$SCRATCH/models/" || exit
@@ -40,9 +40,9 @@ mkdir -p "$SCRATCH/models/run/$RUN"
 ############### Launching domain-specific training script ###############
 
 if [ "$2" == "accelerate" ]; then
-    time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py"  --dataset "$SLURM_TMPDIR/datasets/ftd" --model "meta-llama/Meta-Llama-3.1-8B" --run-name "$RUN" --context 4096 --checkpoint
+    time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py"  --dataset "$SCRATCH/datasets/ftd" --model "meta-llama/Meta-Llama-3.1-8B" --run-name "$RUN" --context 4096 --checkpoint
 else
-    time python "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py"  --dataset "$SLURM_TMPDIR/datasets/ftd" --model "meta-llama/Meta-Llama-3.1-8B" --run-name "$RUN"
+    time python "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py"  --dataset "$SCRATCH/datasets/ftd" --model "meta-llama/Meta-Llama-3.1-8B" --run-name "$RUN"
 fi
 
 tar czf "$PROJ/data/$RUN.tar.gz" -C "$SCRATCH/models/run/$RUN" .
