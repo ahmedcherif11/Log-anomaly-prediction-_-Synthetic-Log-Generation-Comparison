@@ -44,7 +44,9 @@ if [ "$2" == "accelerate" ]; then
 else
     time python "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py"  --dataset "$SCRATCH/datasets/ftd" --model "meta-llama/Meta-Llama-3.1-8B" --run-name "$RUN"
 fi
+mkdir -p "$SCRATCH/saves"
+mkdir -p "$SCRATCH/saves/$RUN"
 
-tar czf "$PROJ/data/$RUN.tar.gz" -C "$SCRATCH/models/run/$RUN" .
+tar czf "$SCRATCH/saves/$RUN/$RUN.tar.gz" -C "$SCRATCH/models/run/$RUN" .
 
 echo "Training complete! Results saved to $SCRATCH/models/run/$RUN"
