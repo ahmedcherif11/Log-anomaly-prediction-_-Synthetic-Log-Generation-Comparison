@@ -4,7 +4,7 @@
 #SBATCH --mem=80000                  # More RAM for big batches/context
 #SBATCH --cpus-per-task=16           # Use more CPUs for dataloader
 #SBATCH --output=$SCRATCH/models/slurm-logs/%N-%j.out
-#SBATCH --time=23:30:00            # 1 day max
+#SBATCH --time=12:30:00            # 1 day max
 #SBATCH --account=def-dmouheb  
 #SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
 #SBATCH --mail-type=ALL    
@@ -23,9 +23,9 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 echo "Preparing data for ftd..."
 #time python "$PROJ/py_scripts/generate_ds.py" --dataset "$SCRATCH/datasets/WINDOWSLOG.jsonl" --out "$SLURM_TMPDIR/datasets/ftd"
 
-mkdir -p "$SCRATCH/datasets/ftd"
-tar xzf "$SCRATCH/datasets/WINDOWSLOG.tar.gz" -C "$SCRATCH/datasets/ftd"
-echo "Data $SCRATCH/datasets/WINDOWSLOG.tar.gz extracted to $SCRATCH/datasets/ftd"
+#mkdir -p "$SCRATCH/datasets/ftd"
+#tar xzf "$SCRATCH/datasets/WINDOWSLOG.tar.gz" -C "$SCRATCH/datasets/ftd"
+#echo "Data $SCRATCH/datasets/WINDOWSLOG.tar.gz extracted to $SCRATCH/datasets/ftd"
 
 echo "Starting training..."
 mkdir -p "$SCRATCH/models/run" && cd "$SCRATCH/models/" || exit
