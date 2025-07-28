@@ -5,3 +5,4 @@ Security-Datasets/
 sigma/
 EvtxeCmd/
 data processing/scripts/sh-scripts/statics/token.sh
+data-processing/scripts/llm-pretrain/credentials.py
