@@ -30,7 +30,7 @@ for param in "$@"; do
     if [ "$param" == "wandb" ]; then
         echo "Syncing with Weights & Biases (wandb)..."
         export WANDB_LOG_MODEL="checkpoint"
-        WANDB_API_KEY=$(python -c "import py_scripts.credentials as cr; print(cr.wandb_key)")
+        WANDB_API_KEY=$(python -c "import sys; sys.path.append('/home/cherif/scratch/models/run/llm-pretrain'); import credentials as cr; print(cr.wandb_key)")
         export WANDB_API_KEY
         wandb sync "$MODELPATH/wandb/latest-run"
 
