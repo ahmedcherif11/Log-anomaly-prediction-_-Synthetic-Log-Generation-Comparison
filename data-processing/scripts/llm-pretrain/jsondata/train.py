@@ -3,17 +3,17 @@ import json
 import os
 from datetime import datetime
 import datasets
-from datasets import Features, Value, Sequence
+from datasets import  Features, Value ,Sequence
 import torch
 from peft import LoraConfig, TaskType
 from transformers import (
-    AutoTokenizer, BitsAndBytesConfig, logging, AutoModelForCausalLM
+    AutoTokenizer, BitsAndBytesConfig, logging, AutoModelForCausalLM, TrainerState
 )
 from trl import SFTTrainer, SFTConfig, get_kbit_device_map
 from transformers.trainer_utils import get_last_checkpoint
 from accelerate import Accelerator
 
-def main(args_pars, run_path, output_dir, save_run, accelerator, device):
+def main(args_pars):
     # Quantization config (QLoRA)
     nf4_config = BitsAndBytesConfig(
         load_in_4bit=True,
@@ -29,29 +29,27 @@ def main(args_pars, run_path, output_dir, save_run, accelerator, device):
         task_type=TaskType.CAUSAL_LM, target_modules="all-linear",
     )
 
-    # Directory setup is already done outside main(), so just ensure dirs exist
+    # Directory setup
+    run_path = f'{args_pars.root}/{args_pars.rname}'
+    output_dir = f'{run_path}/checkpoint/'
+    save_run = f'{run_path}/model/'
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(save_run, exist_ok=True)
 
-    # --- [NEW] Model loaded on correct device for FSDP sharding ---
+    # Load model/tokenizer
     model = AutoModelForCausalLM.from_pretrained(
         args_pars.model,
         torch_dtype=torch.float16,
         quantization_config=nf4_config,
         attn_implementation="sdpa",
-        device_map=None,            # IMPORTANT: do NOT use device_map!
-        local_files_only=True
-    ).to(device)                   # <----- Critical line for FSDP!
-    # ---------------------------------------------------------------
-
-    tokenizer = AutoTokenizer.from_pretrained(args_pars.model, local_files_only=True)
+        device_map=get_kbit_device_map()
+    )
+    tokenizer = AutoTokenizer.from_pretrained(args_pars.model)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = 'right'
-    # --- PREPARE MODEL FOR DISTRIBUTED/FSDP via Accelerate ---
-    # Cette ligne est cruciale : c’est elle qui wrappe le modèle avec FSDP, DDP, etc. selon la config.
-    model = accelerator.prepare(model)
 
-    # --- DATA LOADING ---
+
+    # Load data (expects .jsonl, one log per line)
     data_files = {}
     if os.path.exists(args_pars.train_file):
         data_files["train"] = args_pars.train_file
@@ -60,28 +58,42 @@ def main(args_pars, run_path, output_dir, save_run, accelerator, device):
 
     with open("/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/features.json") as f:
         feat_dict = json.load(f)
-    features_dict = {k: Value(v) for k, v in feat_dict.items()}
-    features_dict['tags'] = Sequence(Value("string"))
-    features = Features(features_dict)
 
+    features_dict = {k: Value(v) for k, v in feat_dict.items()}
+    # Add 'tags' if missing
+    features_dict['tags'] = Sequence(Value("string"))
+
+    features = Features(features_dict)
+    
     dataset = datasets.load_dataset("json", data_files=data_files, field=None, features=features)
     train_data = dataset["train"]
     eval_data = dataset["validation"] if "validation" in dataset else None
 
+    # Debugging info
     import psutil
-    accelerator.print("==== DEBUG: Dataset loaded ====")
-    accelerator.print("Train dataset type:", type(train_data))
-    accelerator.print("Train dataset length:", len(train_data))
-    accelerator.print("RAM used (GB):", psutil.Process(os.getpid()).memory_info().rss / 1e9)
-    accelerator.print("===============================")
-    accelerator.print(torch.cuda.memory_summary(device=None, abbreviated=False))
+    print("==== DEBUG: Dataset loaded ====")
+    print("Train dataset type:", type(train_data))
+    print("Train dataset length:", len(train_data))
+    print("RAM used (GB):", psutil.Process(os.getpid()).memory_info().rss / 1e9)
+    print("===============================")
+
+    print(torch.cuda.memory_summary(device=None, abbreviated=False))
+
+
 
     def preprocess_function(examples):
+        import json
+        # On prépare une liste vide pour stocker chaque log sous forme de string
         logs = []
+        # On calcule combien d'exemples (lignes) il y a dans ce batch
         num_examples = len(next(iter(examples.values())))
+        # Pour chaque ligne du batch :
         for i in range(num_examples):
+            # On construit un dictionnaire {colonne: valeur} pour la i-ème ligne
             row = {k: v[i] for k, v in examples.items()}
+            # On convertit ce dictionnaire en string JSON (toutes les infos du log sont là)
             logs.append(json.dumps(row, ensure_ascii=False))
+        # On applique le tokenizer sur chaque string (troncature/padding si besoin)
         return tokenizer(
             logs,
             truncation=True,
@@ -89,35 +101,37 @@ def main(args_pars, run_path, output_dir, save_run, accelerator, device):
             max_length=args_pars.context
         )
 
+
+    # Tokenize
     try:
         train_data = train_data.map(
             preprocess_function, batched=True, remove_columns=train_data.column_names
         )
     except Exception as e:
-        accelerator.print("Exception during train_data.map:", e)
+        print("Exception during train_data.map:", e)
         import traceback; traceback.print_exc()
         exit(1)
+
     if eval_data:
         try:
             eval_data = eval_data.map(
                 preprocess_function, batched=True, remove_columns=eval_data.column_names
             )
         except Exception as e:
-            accelerator.print("Exception during eval_data.map:", e)
+            print("Exception during eval_data.map:", e)
             import traceback; traceback.print_exc()
             exit(1)
 
-    accelerator.print("==== DEBUG: Dataset after tokenization ====")
+  # ---- DEBUG APRÈS TOKENIZATION ----
+    print("==== DEBUG: Dataset after tokenization ====")
     if hasattr(train_data, 'shape'):
-        accelerator.print("Shape after map:", train_data.shape)
-    accelerator.print("Train dataset length:", len(train_data))
-    try:
-        accelerator.print("First row after tokenization:", train_data[0])
-    except Exception as e:
-        accelerator.print("Could not print first tokenized row:", e)
-    accelerator.print("RAM used (GB):", psutil.Process(os.getpid()).memory_info().rss / 1e9)
-    accelerator.print("===============================")
+        print("Shape after map:", train_data.shape)
+    print("Train dataset length:", len(train_data))
 
+    print("RAM used (GB):", psutil.Process(os.getpid()).memory_info().rss / 1e9)
+    print("===============================")
+
+    # Training args
     train_args = SFTConfig(
         do_train=True,
         per_device_train_batch_size=args_pars.batch,
@@ -125,12 +139,16 @@ def main(args_pars, run_path, output_dir, save_run, accelerator, device):
         gradient_accumulation_steps=args_pars.grad,
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={'use_reentrant': False},
+        #eval_strategy="steps",
+        #eval_steps=100,
+        #fp16_full_eval=True,
         logging_strategy="steps",
         logging_steps=20,
         save_strategy="steps",
         save_steps=200,
         save_total_limit=5,
         lr_scheduler_type="cosine",
+        #load_best_model_at_end=True,
         warmup_steps=50,
         num_train_epochs=args_pars.epochs,
         report_to="wandb",
@@ -147,7 +165,7 @@ def main(args_pars, run_path, output_dir, save_run, accelerator, device):
         model=model,
         peft_config=peft_config,
         train_dataset=train_data,
-        eval_dataset=eval_data,
+        #eval_dataset=eval_data,
         args=train_args,
         processing_class=tokenizer,
         formatting_func=None,
@@ -164,15 +182,18 @@ def main(args_pars, run_path, output_dir, save_run, accelerator, device):
         f"\tstart_time : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
     )
 
-    resume_from = get_last_checkpoint(output_dir) if args_pars.checkpoint else None
-    if args_pars.checkpoint and resume_from:
-        trainer.accelerator.print(f"Resuming from checkpoint: {resume_from}")
-    elif args_pars.checkpoint:
-        trainer.accelerator.print("No checkpoint found, starting from scratch.")
+    # --- Checkpoint logic ---
+    resume_from = None
+    if args_pars.checkpoint:
+        resume_from = get_last_checkpoint(output_dir)
+        if resume_from is not None:
+            trainer.accelerator.print(f"Resuming from checkpoint: {resume_from}")
+        else:
+            trainer.accelerator.print("No checkpoint found, starting from scratch.")
 
     trainer.train(resume_from_checkpoint=resume_from)
+
     trainer.save_model(save_run)
-    tokenizer.save_pretrained(save_run)
 
 def setup_parser():
     parser = argparse.ArgumentParser()
@@ -191,29 +212,20 @@ def setup_parser():
 
 if __name__ == "__main__":
     args_pars = setup_parser().parse_args()
-    run_path = f'{args_pars.root}/{args_pars.rname}'
-    output_dir = f'{run_path}/checkpoint/'
-    save_run = f'{run_path}/model/'
+    logging.disable_progress_bar()
+    datasets.disable_progress_bars()
+
     accelerator = Accelerator(log_with="wandb")
     accelerator.init_trackers(
         'LogAP-LLM',
         init_kwargs={
             "wandb": {
                 "mode": "offline",
-                'dir': f'{run_path}/',
+                'dir': f'{args_pars.root}/{args_pars.rname}/',
                 "resume": "auto" if args_pars.checkpoint else None,
                 "name": args_pars.rname
             }
         }
     )
-    logging.disable_progress_bar()
-    datasets.disable_progress_bars()
-
-    # ----------- [NEW] Set device by rank for FSDP -----------
-    local_rank = int(os.environ.get("LOCAL_RANK", 0))
-    device = torch.device(f"cuda:{local_rank}")
-    torch.cuda.set_device(device)
-    # ----------------------------------------------------------
-
-    main(args_pars, run_path, output_dir, save_run, accelerator, device)
+    main(args_pars)
     accelerator.end_training()

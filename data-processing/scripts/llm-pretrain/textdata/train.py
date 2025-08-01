@@ -24,6 +24,16 @@ def early_debug_log(msg):
         local_rank = "NA"
     print(f"[RANK={rank} LOCAL_RANK={local_rank} PID={os.getpid()}] {msg}", flush=True)
 
+def formatting_func(example):
+    """
+    Prompt formatting
+    :param example:
+    :return:
+    """
+    text = f"### prompt: {example['input_text']}\n ### response: {example['target_text']}"              #TODO: check Next ?? should be Answer
+    return text
+
+
 def main():
     # Quantization configuration
     nf4_config = BitsAndBytesConfig(
@@ -119,6 +129,7 @@ def main():
         eval_dataset=data['test'],
         args=args,
         tokenizer=tokenizer,
+        formatting_func=formatting_func if "-ftd" not in args_pars.dataset else None,
     )
 
     # Verify if checkpoint needs to be saved (due to parallelization issues)
