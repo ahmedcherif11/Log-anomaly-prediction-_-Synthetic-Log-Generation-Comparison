@@ -30,7 +30,8 @@ def formatting_func(example):
     :param example:
     :return:
     """
-    text = f"### prompt: {example['input_text']}\n ### response: {example['target_text']}"              #TODO: check Next ?? should be Answer
+    text = f"### prompt: {example['prompt']}\n### response: {example['response']}"
+                                                                                         #TODO: check Next ?? should be Answer
     return text
 
 
@@ -76,6 +77,8 @@ def main():
     if not os.path.exists(args_pars.dataset):
         raise FileNotFoundError(f"Dataset path does not exist: {args_pars.dataset}")
     data = datasets.load_from_disk(args_pars.dataset)
+    print(data["train"][0])  # Print the first example in the train split
+
 
     # Debugging info
     import psutil
@@ -98,21 +101,21 @@ def main():
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={'use_reentrant': False},
         eval_strategy="steps",
-        eval_steps=50,
+        eval_steps=5,
         fp16_full_eval=True,
         logging_strategy="steps",
-        logging_steps=10,
+        logging_steps=5,
         save_strategy="steps",
-        save_steps=50,
+        save_steps=5,
         save_total_limit=5,
         lr_scheduler_type="cosine",
         #lr_scheduler_kwargs={"num_cycles":4},
         load_best_model_at_end=True,
         warmup_steps=10,
-        num_train_epochs=1,
+        num_train_epochs=4,
         report_to="wandb",
         #max_steps=7250,
-        learning_rate=5e-4,
+        learning_rate=5e-5,
         #fp16=True,
         output_dir=output_dir,
         max_seq_length=args_pars.context,
