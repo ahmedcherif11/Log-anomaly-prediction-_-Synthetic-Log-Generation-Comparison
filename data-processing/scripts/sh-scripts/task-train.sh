@@ -74,4 +74,5 @@ else
 fi
 
 echo "End models run : $RUN"
-tar czf "$PROJ/data/$RUN.tar.gz" -C "$SCRATCH/models/run/$RUN" .
+tar czf "$SCRATCH/saves/$RUN/$RUN.tar.gz" -C "$SCRATCH/models/run/$RUN" .
+echo "Training complete! Results saved to $SCRATCH/models/run/$RUN"
