@@ -17,7 +17,7 @@ source ./statics/environment.sh "$HOME/training_env" offline
 export CUDA_VISIBLE_DEVICES=0
 
 MODEL=${1:-"/home/cherif/scratch/models/run/my-llama3.1-finetune/model"}
-mkdir -p "$SCRATCH/models/llama-3.1-8B-ftdlogs"
+mkdir -p "$SCRATCH/models/final-model"
 
 OUT=${2:-"/home/cherif/scratch/models/final-model"}
 
