@@ -16,7 +16,7 @@ if [ -z "$MODEL" ]; then
 fi
 
 if [ -z "$MODELPATH" ]; then
-  MODELPATH="$SCRATCH/models/run/llama-3.1-8B-ftdwindows4K-adapter2"
+  MODELPATH="$SCRATCH/models/run/my-llama3.1-finetune"
   echo "Model path not specified, using default: $MODELPATH"
 fi
 
