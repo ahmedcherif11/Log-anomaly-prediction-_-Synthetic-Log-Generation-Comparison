@@ -132,7 +132,7 @@ def main():
         eval_dataset=data['test'],
         args=args,
         tokenizer=tokenizer,
-        formatting_func=formatting_func 
+        #formatting_func=formatting_func 
     )
 
     # Verify if checkpoint needs to be saved (due to parallelization issues)
