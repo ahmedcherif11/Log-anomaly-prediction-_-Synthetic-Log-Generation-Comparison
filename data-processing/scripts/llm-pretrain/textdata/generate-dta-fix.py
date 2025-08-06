@@ -33,8 +33,10 @@ def main(args):
     # Step 2: Load as HuggingFace Dataset and save
     disable_progress_bars()
     logs = Dataset.from_text(args.output)
-    data = logs.train_test_split(test_size=0.001)
+    data = logs.train_test_split(test_size=0.05)
     data.save_to_disk(args.out)
+    print(f"Train size: {len(data['train'])}")
+    print(f"Test size: {len(data['test'])}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fix/validate JSONL and save as HuggingFace dataset.")
