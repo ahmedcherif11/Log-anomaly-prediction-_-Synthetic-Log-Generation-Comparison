@@ -16,7 +16,7 @@
 source ./statics/environment.sh "$HOME/training_env" offline
 export CUDA_VISIBLE_DEVICES=0
 
-MODEL=${1:-"/home/cherif/scratch/models/run/llama-3.1-8B-raw-domain-train-adapter"}
+MODEL=${1:-"/home/cherif/scratch/models/run/llama-3.1-8B-raw-domain-train-adapter/model"}
 mkdir -p "$SCRATCH/models/final-model-domain"
 
 OUT=${2:-"/home/cherif/scratch/models/llama-raw-logs-model"}
