@@ -19,7 +19,7 @@ export CUDA_VISIBLE_DEVICES=0
 MODEL=${1:-"/home/cherif/scratch/models/run/llama-3.1-8B-raw-domain-train-adapter"}
 mkdir -p "$SCRATCH/models/final-model-domain"
 
-OUT=${2:-"/home/cherif/scratch/models/final-model-domain"}
+OUT=${2:-"/home/cherif/scratch/models/llama-raw-logs-model"}
 
 cd "$SCRATCH/models/" || exit
 
