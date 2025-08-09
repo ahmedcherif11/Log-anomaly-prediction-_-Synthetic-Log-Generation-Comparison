@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:v100l:4	           # Request 4 V100 GPUs
-#SBATCH --mem=80000                  # More RAM for big batches/context
+#SBATCH --mem=100000                  # More RAM for big batches/context
 #SBATCH --cpus-per-task=16           # Use more CPUs for dataloader
 #SBATCH --output=$SCRATCH/models/slurm-logs/%N-%j.out
 #SBATCH --time=32:00:00
@@ -64,7 +64,7 @@ echo "Starting training..."
 ############### Launching task-specific training scripts ###############
 
 if [ "$2" == "accelerate" ]; then
-  time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --context 1024
+  time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --context 4096
 elif [ "$2" == "save" ]; then
   time accelerate launch "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --save_checkpoint
 elif [ "$2" == "checkpoint" ]; then
