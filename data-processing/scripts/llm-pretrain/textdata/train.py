@@ -101,21 +101,21 @@ def main():
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={'use_reentrant': False},
         eval_strategy="steps",
-        eval_steps=50,
+        eval_steps=10,
         fp16_full_eval=True,
         logging_strategy="steps",
         logging_steps=10,
         save_strategy="steps",
-        save_steps=50,
+        save_steps=10,
         save_total_limit=5,
         lr_scheduler_type="cosine",
         #lr_scheduler_kwargs={"num_cycles":4},
         load_best_model_at_end=True,
         warmup_steps=10,
-        num_train_epochs=1,
+        num_train_epochs=4,
         report_to="wandb",
         #max_steps=7250,
-        learning_rate=5e-4,
+        learning_rate=1e-5,
         #fp16=True,
         output_dir=output_dir,
         max_seq_length=args_pars.context,
@@ -185,7 +185,7 @@ def setup_parser():
     parser.add_argument("--run-name", action='store', type=str, required=True, dest='rname')
     parser.add_argument("--dataset", action="store", type=str, help="dataset path")
     parser.add_argument("--batch", action="store", type=int, help="batch size", default=1)
-    parser.add_argument("--grad", action="store", type=int, help="gradient accumulation step", default=4)
+    parser.add_argument("--grad", action="store", type=int, help="gradient accumulation step", default=8)
     parser.add_argument("--context", action="store", type=int, help="context size (input)", default=2048)
     parser.add_argument("--root", action="store", type=str, help="root path (default ./run)", default="./run")
     parser.add_argument("--checkpoint", action=argparse.BooleanOptionalAction, help="Resume from checkpoint or not")
