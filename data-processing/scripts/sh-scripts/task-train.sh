@@ -10,7 +10,7 @@
 #SBATCH --mail-type=ALL    
 
 
-### launch exemple : sbatch ftt_train.sh llama-3.1-8B-fttlogs-adapter accelerate
+### launch exemple : sbatch task-train.sh llama-3.1-8B-log-generator-adapter accelerate
 
 ############### Setting up environments & variables ###############
 
@@ -48,7 +48,7 @@ else
   fi
 fi
 
-PROCESSED="$SCRATCH/datasets/prompts"
+PROCESSED="$SCRATCH/datasets/new-prompts"
 
 echo "Base run : $BASE_RUN"
 echo "Run name : $RUN"
@@ -64,13 +64,13 @@ echo "Starting training..."
 ############### Launching task-specific training scripts ###############
 
 if [ "$2" == "accelerate" ]; then
-  time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-3.1-8B-ftdlogs" --run-name "$RUN" --context 1024
+  time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --context 1024
 elif [ "$2" == "save" ]; then
-  time accelerate launch "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-3.1-8B-ftdlogs" --run-name "$RUN" --save_checkpoint
+  time accelerate launch "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --save_checkpoint
 elif [ "$2" == "checkpoint" ]; then
-  time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-3.1-8B-ftdlogs" --run-name "$RUN" --checkpoint --context 1024
+  time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --checkpoint --context 1024
 else
-  time python "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-3.1-8B-ftdlogs" --run-name "$RUN" --context 2048
+  time python "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --context 2048
 fi
 
 echo "End models run : $RUN"
