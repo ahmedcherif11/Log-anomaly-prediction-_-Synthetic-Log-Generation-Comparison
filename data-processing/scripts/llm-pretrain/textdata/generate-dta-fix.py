@@ -1,47 +1,73 @@
-# Combines checks.py and generate-dta.py functionality
-
+# build_dataset_two_cols.py
 import json
 import re
 import argparse
 from datasets import Dataset, disable_progress_bars
 
-def fix_backslashes(s):
+def fix_backslashes(s: str) -> str:
+    # Escape lone backslashes not part of valid JSON escapes
     return re.sub(r'(?<!\\)\\(?![\\nt"\\/bfru])', r'\\\\', s)
 
-def process_file(input_path, output_path):
-    fixed_lines = []
-    with open(input_path, 'r', encoding='utf-8') as infile:
-        for line in infile:
+def load_and_fix_jsonl(path: str):
+    fixed = []
+    bad = 0
+    with open(path, "r", encoding="utf-8") as f:
+        for i, line in enumerate(f, 1):
+            line = line.rstrip("\n")
+            if not line.strip():
+                continue
             try:
-                json.loads(line)
-                fixed_lines.append(line)
+                obj = json.loads(line)
             except json.JSONDecodeError:
-                fixed_line = fix_backslashes(line)
                 try:
-                    json.loads(fixed_line)
-                    fixed_lines.append(fixed_line)
+                    obj = json.loads(fix_backslashes(line))
                 except Exception:
-                    print("Line still invalid after fix:", line)
+                    bad += 1
+                    print(f"⚠️ Skipping invalid line {i}")
                     continue
-    with open(output_path, 'w', encoding='utf-8') as outfile:
-        outfile.writelines(fixed_lines)
-    print(f"✅ All valid lines written to {output_path}")
+            fixed.append(obj)
+    print(f"✅ Parsed {len(fixed)} lines. Skipped {bad} invalid lines.")
+    return fixed
+
+def to_examples(objs):
+    examples = []
+    dropped = 0
+    for o in objs:
+        prompt = o.get("prompt")
+        response = o.get("response")
+        if not isinstance(prompt, str) or not isinstance(response, str):
+            dropped += 1
+            continue
+        examples.append({"prompt": prompt, "response": response})
+    if dropped:
+        print(f"⚠️ Dropped {dropped} lines missing 'prompt' or 'response'.")
+    return examples
 
 def main(args):
-    # Step 1: Validate/fix JSONL
-    process_file(args.input, args.output)
-    # Step 2: Load as HuggingFace Dataset and save
     disable_progress_bars()
-    logs = Dataset.from_text(args.output)
-    data = logs.train_test_split(test_size=0.05)
-    data.save_to_disk(args.out)
-    print(f"Train size: {len(data['train'])}")
-    print(f"Test size: {len(data['test'])}")
+
+    # Step 1: Read + fix JSONL
+    rows = load_and_fix_jsonl(args.input)
+
+    # Step 2: Keep only prompt & response
+    examples = to_examples(rows)
+    if not examples:
+        raise RuntimeError("No valid examples to save.")
+
+    ds = Dataset.from_list(examples)
+    split = ds.train_test_split(test_size=args.test_size, seed=42, shuffle=True)
+    split.save_to_disk(args.out)
+
+    print("Columns:", split["train"].column_names)
+    print("Train size:", len(split["train"]))
+    print("Test size:", len(split["test"]))
+    print("Sample:", split["train"][0])
+    print("Number of columns:", len(split["train"].column_names))
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Fix/validate JSONL and save as HuggingFace dataset.")
-    parser.add_argument("--input", "-i", default="prompts.jsonl", help="Input JSONL file")
-    parser.add_argument("--output", "-o", default="prompts_fixed.jsonl", help="Output JSONL file")
-    parser.add_argument("--out", type=str, required=True, help="Folder to save processed dataset")
-    args = parser.parse_args()
+    p = argparse.ArgumentParser()
+    p.add_argument("-i", "--input", required=True, help="Input JSONL file")
+    p.add_argument("-o", "--out", required=True, help="Output dataset folder")
+    p.add_argument("--test-size", type=float, default=0.1, help="Holdout fraction (default 0.1)")
+    args = p.parse_args()
     main(args)
