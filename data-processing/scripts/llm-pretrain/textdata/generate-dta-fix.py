@@ -68,6 +68,6 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("-i", "--input", required=True, help="Input JSONL file")
     p.add_argument("-o", "--out", required=True, help="Output dataset folder")
-    p.add_argument("--test-size", type=float, default=0.1, help="Holdout fraction (default 0.1)")
+    p.add_argument("--test-size", type=float, default=0.09, help="Holdout fraction (default 0.09)")
     args = p.parse_args()
     main(args)
