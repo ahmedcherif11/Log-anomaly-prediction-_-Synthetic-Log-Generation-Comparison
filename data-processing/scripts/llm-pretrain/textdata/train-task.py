@@ -28,12 +28,15 @@ def early_debug_log(msg):
 INSTR = "### Instruction:"
 RESP  = "### Response:"
 
+# Define this after you load your tokenizer
+EOS_TOKEN = "<|eos|>" 
+
 def formatting_func(examples):
     texts = []
     for p, r in zip(examples["prompt"], examples["response"]):
         p = (p or "").strip()
         r = (r or "").strip()
-        text = f"{INSTR}\n{p}\n\n{RESP}\n{r}{tokenizer.eos_token}"
+        text = f"{INSTR}\n{p}\n\n{RESP}\n{r}{EOS_TOKEN}"
         texts.append(text)
     return texts
 
