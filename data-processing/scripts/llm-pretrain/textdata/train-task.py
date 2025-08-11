@@ -113,7 +113,7 @@ def main():
         lr_scheduler_type="cosine",
         #lr_scheduler_kwargs={"num_cycles":4},
         load_best_model_at_end=True,
-        warmup_ratio=0.1, 
+        warmup_ratio=0.07, 
         num_train_epochs=6,
         report_to="wandb",
         #max_steps=7250,
