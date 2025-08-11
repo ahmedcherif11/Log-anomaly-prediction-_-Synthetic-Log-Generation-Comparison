@@ -68,11 +68,12 @@ if [ "$2" == "accelerate" ]; then
 elif [ "$2" == "save" ]; then
   time accelerate launch "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train-task.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --save_checkpoint
 elif [ "$2" == "checkpoint" ]; then
-  time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train-task.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --checkpoint --context 1024
+  time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train-task.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --checkpoint --context 4096
 else
   time python "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train-task.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --context 2048
 fi
 
 echo "End models run : $RUN"
+mkdir -p "$SCRATCH/saves/$RUN"
 tar czf "$SCRATCH/saves/$RUN/$RUN.tar.gz" -C "$SCRATCH/models/run/$RUN" .
 echo "Training complete! Results saved to $SCRATCH/models/run/$RUN"

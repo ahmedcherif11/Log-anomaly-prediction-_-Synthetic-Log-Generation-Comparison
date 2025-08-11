@@ -78,6 +78,9 @@ def main():
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(args_pars.model, local_files_only=True)
     tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.truncation_side = "left"
+    tokenizer.padding_side = "right"
+    tokenizer.model_max_length = args_pars.context
 
     # Load data
     if not os.path.exists(args_pars.dataset):
@@ -131,12 +134,13 @@ def main():
     )
 
     
-    response_template = RESP  # "### Response:"
+    response_template = "### Response:\n"
     data_collator = DataCollatorForCompletionOnlyLM(
         response_template=response_template,
         tokenizer=tokenizer,
         mlm=False,
     )
+
 
     trainer = SFTTrainer(
         model=base_model,
