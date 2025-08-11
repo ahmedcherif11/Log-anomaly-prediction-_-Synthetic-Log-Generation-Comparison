@@ -4,7 +4,7 @@
 #SBATCH --mem=100000                  # More RAM for big batches/context
 #SBATCH --cpus-per-task=16           # Use more CPUs for dataloader
 #SBATCH --output=$SCRATCH/models/slurm-logs/%N-%j.out
-#SBATCH --time=32:00:00
+#SBATCH --time=05:00:00
 #SBATCH --account=def-dmouheb  
 #SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
 #SBATCH --mail-type=ALL    
@@ -64,13 +64,13 @@ echo "Starting training..."
 ############### Launching task-specific training scripts ###############
 
 if [ "$2" == "accelerate" ]; then
-  time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --context 4096
+  time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train-task.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --context 4096
 elif [ "$2" == "save" ]; then
-  time accelerate launch "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --save_checkpoint
+  time accelerate launch "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train-task.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --save_checkpoint
 elif [ "$2" == "checkpoint" ]; then
-  time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --checkpoint --context 1024
+  time accelerate launch --config_file="$PROJ/config/train_config.yaml" "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train-task.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --checkpoint --context 1024
 else
-  time python "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --context 2048
+  time python "/project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/train-task.py" --dataset "$PROCESSED" --model "/scratch/cherif/models/llama-raw-logs-model" --run-name "$RUN" --context 2048
 fi
 
 echo "End models run : $RUN"
