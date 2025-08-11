@@ -25,15 +25,17 @@ def early_debug_log(msg):
         local_rank = "NA"
     print(f"[RANK={rank} LOCAL_RANK={local_rank} PID={os.getpid()}] {msg}", flush=True)
 
-def formatting_func(example):
-    """
-    Prompt formatting
-    :param example:
-    :return:
-    """
-    text = f"### prompt: {example['prompt']}\n### response: {example['response']}"
-                                                                                         #TODO: check Next ?? should be Answer
-    return text
+INSTR = "### Instruction:"
+RESP  = "### Response:"
+
+def formatting_func(examples):
+    texts = []
+    for p, r in zip(examples["prompt"], examples["response"]):
+        p = (p or "").strip()
+        r = (r or "").strip()
+        text = f"{INSTR}\n{p}\n\n{RESP}\n{r}{tokenizer.eos_token}"
+        texts.append(text)
+    return texts
 
 
 def main():
@@ -119,18 +121,20 @@ def main():
         #fp16=True,
         output_dir=output_dir,
         max_seq_length=args_pars.context,
-        dataset_text_field='text',
+        dataset_text_field=None,
         disable_tqdm=True,
         run_name=args_pars.rname,
         packing=False,  # Set to True if you want to use packing
     )
 
     
-    response_template = "### response:"
+    response_template = RESP  # "### Response:"
     data_collator = DataCollatorForCompletionOnlyLM(
         response_template=response_template,
         tokenizer=tokenizer,
+        mlm=False,
     )
+
     trainer = SFTTrainer(
         model=base_model,
         peft_config=peft_config,
