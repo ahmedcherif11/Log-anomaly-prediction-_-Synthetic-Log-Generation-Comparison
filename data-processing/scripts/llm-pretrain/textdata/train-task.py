@@ -71,7 +71,8 @@ def main():
         device_map=get_kbit_device_map(),#{"": PartialState().local_process_index}
     )
 
-    # base_model = prepare_model_for_kbit_training(base_model, True)
+    # base_model = prepare_model_for_kbit_training(base_model,
+    #  True)
     # model = get_peft_model(base_model, peft_config)
     # print(f"Using model {args_pars.model} in {base_model.dtype}")
 
@@ -104,7 +105,7 @@ def main():
         do_train=True,
         per_device_train_batch_size=args_pars.batch,
         per_device_eval_batch_size=args_pars.batch,
-        #optim="adamw_bnb_8bit",
+        optim="adamw_bnb_8bit",
         gradient_accumulation_steps=args_pars.grad,
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={'use_reentrant': False},
@@ -118,9 +119,13 @@ def main():
         save_total_limit=5,
         lr_scheduler_type="cosine",
         #lr_scheduler_kwargs={"num_cycles":4},
+        lr_scheduler_kwargs={"min_lr_ratio": 0.1},  # keep min LR at 10% of initial LR
+
         load_best_model_at_end=True,
         warmup_ratio=0.07, 
-        num_train_epochs=6,
+        weight_decay=0.05,          # add small wd for stability
+        max_grad_norm=1.0,
+        num_train_epochs=9,
         report_to="wandb",
         #max_steps=7250,
         learning_rate=1e-5,
