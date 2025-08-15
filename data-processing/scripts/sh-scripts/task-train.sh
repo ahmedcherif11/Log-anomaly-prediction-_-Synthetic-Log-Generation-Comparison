@@ -48,7 +48,7 @@ else
   fi
 fi
 
-PROCESSED="$SCRATCH/datasets/new-new-prompts"
+PROCESSED="$SCRATCH/datasets/shortest-prompts"
 
 echo "Base run : $BASE_RUN"
 echo "Run name : $RUN"
