@@ -63,6 +63,7 @@ def main(args):
     print("Test size:", len(split["test"]))
     print("Sample:", split["train"][0])
     print("Number of columns:", len(split["train"].column_names))
+    print("max length:", split["train"].map(lambda x: len(x["prompt"] + x["response"]), batched=True).max())
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
