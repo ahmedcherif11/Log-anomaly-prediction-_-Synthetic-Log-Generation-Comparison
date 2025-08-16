@@ -105,7 +105,7 @@ def main():
         do_train=True,
         per_device_train_batch_size=args_pars.batch,
         per_device_eval_batch_size=args_pars.batch,
-        optim="adamw_bnb_8bit",
+        #optim="adamw_bnb_8bit",
         gradient_accumulation_steps=args_pars.grad,
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={'use_reentrant': False},
@@ -118,14 +118,14 @@ def main():
         save_steps=5,
         save_total_limit=5,
         lr_scheduler_type="cosine",
-        #lr_scheduler_kwargs={"num_cycles":4},
-        lr_scheduler_kwargs={"min_lr_ratio": 0.1},  # keep min LR at 10% of initial LR
+        lr_scheduler_kwargs={"num_cycles":2},
+        #lr_scheduler_kwargs={"min_lr_ratio": 0.1},  # keep min LR at 10% of initial LR
 
         load_best_model_at_end=True,
         warmup_ratio=0.07, 
         weight_decay=0.05,          # add small wd for stability
         max_grad_norm=1.0,
-        num_train_epochs=9,
+        num_train_epochs=10,
         report_to="wandb",
         #max_steps=7250,
         learning_rate=1e-5,
