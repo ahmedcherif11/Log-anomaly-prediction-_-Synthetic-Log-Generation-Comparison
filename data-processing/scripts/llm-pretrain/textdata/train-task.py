@@ -105,7 +105,7 @@ def main():
         do_train=True,
         per_device_train_batch_size=args_pars.batch,
         per_device_eval_batch_size=args_pars.batch,
-        #optim="adamw_bnb_8bit",
+        optim="adamw_bnb_8bit",
         gradient_accumulation_steps=args_pars.grad,
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={'use_reentrant': False},
