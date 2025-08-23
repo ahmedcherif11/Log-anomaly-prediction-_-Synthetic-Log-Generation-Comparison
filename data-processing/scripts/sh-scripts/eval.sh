@@ -13,12 +13,12 @@ source ./statics/environment.sh "$HOME/training_env" offline
 export CUDA_VISIBLE_DEVICES=0
 
 # --- CHOOSE YOUR INPUTS ---
-MODEL_RUN=llama-3.1-8B-ftdlogs-adapter   # <-- or final-model after merging
-MODEL_DIR=$SCRATCH/models/run/$MODEL_RUN/model     # <-- For merged, maybe $SCRATCH/models/final-model
+MODEL_RUN=llama-3.1-8B-log-generator   # <-- or final-model after merging
+MODEL_DIR=$SCRATCH/models/llama-gen-logs-model    # <-- For merged, maybe $SCRATCH/models/final-model
 OUTPUT_DIR=$SCRATCH/eval/$MODEL_RUN
 
 # For test set with references:
-DATASET=$SCRATCH/datasets/ftd      # HuggingFace disk format with test split
+DATASET=$SCRATCH/datasets/shortest-prompts/test     # HuggingFace disk format with test split
 
 # For generation-only on raw prompts (jsonl file):
 # DATASET=$SCRATCH/datasets/synthetic_prompts.jsonl
