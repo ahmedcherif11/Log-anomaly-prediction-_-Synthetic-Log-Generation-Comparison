@@ -18,7 +18,7 @@ MODEL_DIR=$SCRATCH/models/llama-gen-logs-model    # <-- For merged, maybe $SCRAT
 OUTPUT_DIR=$SCRATCH/eval/$MODEL_RUN
 
 # For test set with references:
-DATASET=$SCRATCH/datasets/shortest-prompts/test     # HuggingFace disk format with test split
+DATASET=$SCRATCH/datasets/shortest-prompts     # HuggingFace disk format with test split
 
 # For generation-only on raw prompts (jsonl file):
 # DATASET=$SCRATCH/datasets/synthetic_prompts.jsonl
