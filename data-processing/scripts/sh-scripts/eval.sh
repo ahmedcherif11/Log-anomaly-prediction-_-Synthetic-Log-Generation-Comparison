@@ -13,7 +13,7 @@ source ./statics/environment.sh "$HOME/training_env" offline
 export CUDA_VISIBLE_DEVICES=0
 
 # --- CHOOSE YOUR INPUTS ---
-MODEL_RUN=llama-3.1-8B-log-generator   # <-- or final-model after merging
+MODEL_RUN=llama-3.1-8B-log-generator-eval   # <-- or final-model after merging
 MODEL_DIR=$SCRATCH/models/llama-gen-logs-model    # <-- For merged, maybe $SCRATCH/models/final-model
 OUTPUT_DIR=$SCRATCH/eval/$MODEL_RUN
 
