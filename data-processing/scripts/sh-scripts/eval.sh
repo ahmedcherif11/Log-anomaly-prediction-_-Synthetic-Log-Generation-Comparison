@@ -29,4 +29,4 @@ python /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Genera
     --model_dir $MODEL_DIR \
     --dataset $DATASET \
     --output_dir $OUTPUT_DIR \
-    --max_new_tokens 256
+    --max_new_tokens 1024 \
