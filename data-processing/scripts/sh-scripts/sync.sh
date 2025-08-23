@@ -16,7 +16,7 @@ if [ -z "$MODEL" ]; then
 fi
 
 if [ -z "$MODELPATH" ]; then
-  MODELPATH="$SCRATCH/models/run/llama-3.1-8B-log-generator-short-adapter"
+  MODELPATH="$SCRATCH/models/run/llama-3.1-8B-log-generator-adam-adapter"
   echo "Model path not specified, using default: $MODELPATH"
 fi
 

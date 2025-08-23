@@ -16,10 +16,10 @@
 source ./statics/environment.sh "$HOME/training_env" offline
 export CUDA_VISIBLE_DEVICES=0
 
-MODEL=${1:-"/home/cherif/scratch/models/run/llama-3.1-8B-raw-domain-train-adapter/model"}
-mkdir -p "$SCRATCH/models/final-model-domain"
+MODEL=${1:-"/home/cherif/scratch/models/run/llama-3.1-8B-log-generator-adam-adapter/model"}
+mkdir -p "$SCRATCH/models/llama-gen-logs-model"
 
-OUT=${2:-"/home/cherif/scratch/models/llama-raw-logs-model"}
+OUT=${2:-"/home/cherif/scratch/models/llama-gen-logs-model"}
 
 cd "$SCRATCH/models/" || exit
 
