@@ -314,7 +314,7 @@ def main(args):
         valid_json_counts.append(len(gen_objs))
         exact_two_flags.append(int(len(gen_objs) == 2))
 
-        record = {"prompt": prompt, "generated": generated_response, "gen_json_count": len(gen_objs)}
+        record = {"generated": generated_response, "gen_json_count": len(gen_objs) }
 
         # Metrics (pairwise on first min(len(gen), len(ref)) pairs)
         if has_reference:
