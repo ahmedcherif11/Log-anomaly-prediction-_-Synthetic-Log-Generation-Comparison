@@ -139,7 +139,24 @@ def main():
     )
 
     
-    
+    response_template = "### Response:\n"
+    data_collator = DataCollatorForCompletionOnlyLM(
+        response_template=response_template,
+        tokenizer=tokenizer,
+        mlm=False,
+    )
+
+
+    trainer = SFTTrainer(
+        model=base_model,
+        peft_config=peft_config,
+        train_dataset=data['train'],
+        eval_dataset=data['test'],
+        args=args,
+        tokenizer=tokenizer,
+        formatting_func=formatting_func,
+        data_collator=data_collator
+    )
 
     # Verify if checkpoint needs to be saved (due to parallelization issues)
     if args_pars.is_save_checkpoint:
