@@ -6,7 +6,6 @@
 #SBATCH --output=$SCRATCH/models/slurm-logs/eval-%N-%j.out
 #SBATCH --time=06:00:00
 #SBATCH --exclude=cdr2656
-#SBATCH --nodelist=cdr2645
 #SBATCH --account=def-dmouheb
 #SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
 #SBATCH --mail-type=ALL
