@@ -10,7 +10,7 @@
 #SBATCH --mail-type=ALL    
 
 
-### launch exemple : sbatch task-train.sh llama-3.1-8B-log-generator-adapter accelerate
+### launch exemple : sbatch task-train.sh llama-3.1-8B-one-log-generator-adapter accelerate
 
 ############### Setting up environments & variables ###############
 
@@ -48,7 +48,7 @@ else
   fi
 fi
 
-PROCESSED="$SCRATCH/datasets/shortest-prompts"
+PROCESSED="$SCRATCH/datasets/prompts-one-log"
 
 echo "Base run : $BASE_RUN"
 echo "Run name : $RUN"
