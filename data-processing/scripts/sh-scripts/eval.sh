@@ -11,6 +11,24 @@
 
 source ./statics/environment.sh "$HOME/training_env" offline
 export CUDA_VISIBLE_DEVICES=0
+# 1) What GPUs does Slurm give me?
+echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
+# Should be something like "0" or "0,1", not empty.
+
+# 2) Does the node have visible GPUs and a working driver?
+nvidia-smi
+
+# 3) Does my PyTorch build have CUDA and can it init it?
+python - <<'PY'
+import os, torch
+print("CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"))
+print("torch.version.cuda:", torch.version.cuda)
+print("torch.cuda.is_available():", torch.cuda.is_available())
+print("device_count:", torch.cuda.device_count())
+if torch.cuda.is_available():
+    print("current device:", torch.cuda.current_device())
+    print("device name:", torch.cuda.get_device_name(0))
+PY
 
 # --- CHOOSE YOUR INPUTS ---
 MODEL_RUN=llama-3.1-8B-log-generator-eval2   # <-- or final-model after merging

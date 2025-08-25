@@ -235,9 +235,13 @@ def regenerate_two_logs_joint(model, tokenizer, prompt, max_new_tokens):
 # ---------------------------
 def main(args):
     cuda_ok = torch.cuda.is_available()
-    device_map = "auto" if cuda_ok else {"": "cpu"}
     print(f"CUDA available: {cuda_ok}")
+    print(f"CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES','<unset>')}")
+    device_map = "auto" if cuda_ok else {"": "cpu"}
     print(f"Using device map: {device_map}")
+
+
+
 
     print("Loading model from", args.model_dir)
     model = AutoModelForCausalLM.from_pretrained(
