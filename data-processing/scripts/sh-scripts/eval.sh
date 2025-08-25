@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:v100l:1
-#SBATCH --mem=32000
+#SBATCH --mem=32G
 #SBATCH --cpus-per-task=4
 #SBATCH --output=$SCRATCH/models/slurm-logs/eval-%N-%j.out
 #SBATCH --time=06:00:00
@@ -9,16 +9,25 @@
 #SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
 #SBATCH --mail-type=ALL
 
-source ./statics/environment.sh "$HOME/training_env" offline
-export CUDA_VISIBLE_DEVICES=0
-# 1) What GPUs does Slurm give me?
-echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
-# Should be something like "0" or "0,1", not empty.
+set -euo pipefail
 
-# 2) Does the node have visible GPUs and a working driver?
-nvidia-smi
+module purge
+# Load site-recommended CUDA/PyTorch (ask your cluster docs; examples:)
+# module load cuda/12.1
+# module load python/3.12  # if needed
+# Or a site pytorch module:
+# module load pytorch/2.3.1
 
-# 3) Does my PyTorch build have CUDA and can it init it?
+# Activate your venv AFTER modules
+source "$HOME/training_env/bin/activate"
+
+# If your environment.sh only sets Python packages, OK.
+# If it exports CUDA paths, consider skipping it or ensure it doesn't override CUDA libs.
+# source ./statics/environment.sh "$HOME/training_env" offline
+
+echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-<unset>}"
+nvidia-smi || true
+
 python - <<'PY'
 import os, torch
 print("CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"))
@@ -26,25 +35,18 @@ print("torch.version.cuda:", torch.version.cuda)
 print("torch.cuda.is_available():", torch.cuda.is_available())
 print("device_count:", torch.cuda.device_count())
 if torch.cuda.is_available():
-    print("current device:", torch.cuda.current_device())
-    print("device name:", torch.cuda.get_device_name(0))
+    print("device 0:", torch.cuda.get_device_name(0))
 PY
 
-# --- CHOOSE YOUR INPUTS ---
-MODEL_RUN=llama-3.1-8B-log-generator-eval2   # <-- or final-model after merging
-MODEL_DIR=$SCRATCH/models/llama-gen-logs-model    # <-- For merged, maybe $SCRATCH/models/final-model
+MODEL_RUN=llama-3.1-8B-log-generator-eval4
+MODEL_DIR=$SCRATCH/models/llama-gen-logs-model
 OUTPUT_DIR=$SCRATCH/eval/$MODEL_RUN
+DATASET=$SCRATCH/datasets/shortest-prompts
 
-# For test set with references:
-DATASET=$SCRATCH/datasets/shortest-prompts     # HuggingFace disk format with test split
-
-# For generation-only on raw prompts (jsonl file):
-# DATASET=$SCRATCH/datasets/synthetic_prompts.jsonl
-
-mkdir -p $OUTPUT_DIR
+mkdir -p "$OUTPUT_DIR"
 
 python /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/new-eval.py \
-    --model_dir $MODEL_DIR \
-    --dataset $DATASET \
-    --output_dir $OUTPUT_DIR \
-    --max_new_tokens 1024 \
+  --model_dir "$MODEL_DIR" \
+  --dataset "$DATASET" \
+  --output_dir "$OUTPUT_DIR" \
+  --max_new_tokens 1024
