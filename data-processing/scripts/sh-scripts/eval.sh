@@ -31,7 +31,7 @@ if torch.cuda.is_available():
 PY
 
 # --- CHOOSE YOUR INPUTS ---
-MODEL_RUN=llama-3.1-8B-log-generator-eval2   # <-- or final-model after merging
+MODEL_RUN=llama-3.1-8B-log-generator-evalfrf   # <-- or final-model after merging
 MODEL_DIR=$SCRATCH/models/llama-gen-logs-model    # <-- For merged, maybe $SCRATCH/models/final-model
 OUTPUT_DIR=$SCRATCH/eval/$MODEL_RUN
 
