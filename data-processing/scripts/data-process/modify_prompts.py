@@ -41,17 +41,17 @@ def remove_mitre_context(prompt_text):
     
     return before_context + after_context
 
-def keep_first_two_logs(response_text):
-    """Keep only the first 2 logs from the response instead of 5."""
+def keep_first_log(response_text):
+    """Keep only the first log from the response instead of 5."""
     if not response_text:
         return response_text
-    
+
     # Split the response by newlines to get individual log entries
     lines = response_text.strip().split('\n')
-    
-    # Keep only the first 2 lines (logs)
-    if len(lines) >= 2:
-        return '\n'.join(lines[:2])
+
+    # Keep only the first line (log)
+    if len(lines) >= 1:
+        return lines[0]
     else:
         return response_text
 
@@ -77,13 +77,13 @@ def modify_prompt(prompt_text):
     # Update the output instruction to generate 2 logs instead of 5
     modified_prompt = re.sub(
         r'Generate 5 realistic, unique Windows event logs',
-        'Generate 2 realistic, unique Windows event logs',
+        'Generate 1 realistic, unique Windows event log',
         modified_prompt
     )
     
     modified_prompt = re.sub(
         r'Output exactly 5 unique Windows event logs',
-        'Output exactly 2 unique Windows event logs',
+        'Output exactly 1 unique Windows event log',
         modified_prompt
     )
     
@@ -107,7 +107,7 @@ def process_jsonl_file(input_file, output_file):
                 
                 # Modify the response (keep only first 2 logs)
                 if 'response' in data:
-                    data['response'] = keep_first_two_logs(data['response'])
+                    data['response'] = keep_first_log(data['response'])
                 
                 # Write modified line
                 outfile.write(json.dumps(data, ensure_ascii=False) + '\n')
@@ -126,7 +126,7 @@ def process_jsonl_file(input_file, output_file):
 def main():
     # Define file paths
     input_file = r"c:\Users\AHMED\Desktop\new-approch\dataset\prompts-copy.jsonl"
-    output_file = r"c:\Users\AHMED\Desktop\new-approch\dataset\prompts-modified.jsonl"
+    output_file = r"c:\Users\AHMED\Desktop\new-approch\dataset\prompts-one-log.jsonl"
     
     # Check if input file exists
     if not os.path.exists(input_file):

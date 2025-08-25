@@ -125,7 +125,7 @@ def main():
         warmup_ratio=0.07, 
         weight_decay=0.05,          # add small wd for stability
         max_grad_norm=1.0,
-        num_train_epochs=10,
+        num_train_epochs=13,
         report_to="wandb",
         #max_steps=7250,
         learning_rate=1e-5,
@@ -139,24 +139,7 @@ def main():
     )
 
     
-    response_template = "### Response:\n"
-    data_collator = DataCollatorForCompletionOnlyLM(
-        response_template=response_template,
-        tokenizer=tokenizer,
-        mlm=False,
-    )
-
-
-    trainer = SFTTrainer(
-        model=base_model,
-        peft_config=peft_config,
-        train_dataset=data['train'],
-        eval_dataset=data['test'],
-        args=args,
-        tokenizer=tokenizer,
-        formatting_func=formatting_func,
-        data_collator=data_collator
-    )
+    
 
     # Verify if checkpoint needs to be saved (due to parallelization issues)
     if args_pars.is_save_checkpoint:
