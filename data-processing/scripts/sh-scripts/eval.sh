@@ -43,7 +43,7 @@ DATASET=$SCRATCH/datasets/shortest-prompts     # HuggingFace disk format with te
 
 mkdir -p $OUTPUT_DIR
 
-python /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/eval.py \
+python /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/new-eval.py \
     --model_dir $MODEL_DIR \
     --dataset $DATASET \
     --output_dir $OUTPUT_DIR \
