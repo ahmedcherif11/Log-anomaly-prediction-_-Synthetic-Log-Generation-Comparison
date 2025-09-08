@@ -66,7 +66,7 @@ RX = {
     "path_any": re.compile(r"[A-Za-z]:\\[^\s\"']+", re.I),
     "ipv4": re.compile(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b"),
     "tech_id": re.compile(r"\bT[0-9]{4}(?:\.[0-9]{3})?\b", re.I),
-}a
+}
 
 def extract_indicators(s: str):
     found = {}
