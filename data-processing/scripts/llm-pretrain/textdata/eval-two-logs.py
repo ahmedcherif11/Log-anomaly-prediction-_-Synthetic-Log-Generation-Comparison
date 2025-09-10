@@ -470,7 +470,7 @@ def main(args):
             gen_text2 = regenerate_two_logs_joint(
                 model, tokenizer,
                 prompt,
-                max_new_tokens=min(640, max(256, args.max_new_tokens))  # small budget bump allowed
+                max_new_tokens=640 # small budget bump allowed
             )
             if count_top_level_json(gen_text2) > count_top_level_json(gen_text):
                 gen_text = gen_text2

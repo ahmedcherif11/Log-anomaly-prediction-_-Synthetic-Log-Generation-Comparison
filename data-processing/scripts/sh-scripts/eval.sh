@@ -4,7 +4,7 @@
 #SBATCH --mem=32000
 #SBATCH --cpus-per-task=4
 #SBATCH --output=$SCRATCH/models/slurm-logs/eval-%N-%j.out
-#SBATCH --time=06:00:00
+#SBATCH --time=02:00:00
 #SBATCH --exclude=cdr2656,cdr2658
 #SBATCH --account=def-dmouheb
 #SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
@@ -42,20 +42,20 @@ if [ $? -ne 0 ]; then
   exit 0
 fi
 # --- CHOOSE YOUR INPUTS ---
-MODEL_RUN=llama-3.1-8B-one-log-generator-eval2  # <-- or final-model after merging
-MODEL_DIR=$SCRATCH/models/llama-3.1-8B-one-log-generator    # <-- For merged, maybe $SCRATCH/models/final-model
+MODEL_RUN=llama-3.1-8B-TWO-log-generator-eval3  # <-- or final-model after merging
+MODEL_DIR=$SCRATCH/models/llama-gen-logs-model   # <-- For merged, maybe $SCRATCH/models/final-model
 OUTPUT_DIR=$SCRATCH/eval/$MODEL_RUN
 
 # For test set with references:
-DATASET=$SCRATCH/datasets/prompts-one-log     # HuggingFace disk format with test split
+DATASET=$SCRATCH/datasets/shortest-prompts     # HuggingFace disk format with test split
 
 # For generation-only on raw prompts (jsonl file):
 # DATASET=$SCRATCH/datasets/synthetic_prompts.jsonl
 
 mkdir -p $OUTPUT_DIR
 
-python /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/eval-one_log.py \
+python /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/eval-two-logs.py \
     --model_dir $MODEL_DIR \
     --dataset $DATASET \
     --output_dir $OUTPUT_DIR \
-    --max_new_tokens 384 \
+    --max_new_tokens 512 \
