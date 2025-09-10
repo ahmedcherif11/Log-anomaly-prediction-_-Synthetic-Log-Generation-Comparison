@@ -47,7 +47,7 @@ MODEL_DIR=$SCRATCH/models/llama-3.1-8B-one-log-generator    # <-- For merged, ma
 OUTPUT_DIR=$SCRATCH/eval/$MODEL_RUN
 
 # For test set with references:
-DATASET=$SCRATCH/datasets/prompts-one-log     # HuggingFace disk format with test split
+DATASET=$SCRATCH/datasets/prompts-one-log2     # HuggingFace disk format with test split
 
 # For generation-only on raw prompts (jsonl file):
 # DATASET=$SCRATCH/datasets/synthetic_prompts.jsonl
@@ -58,4 +58,4 @@ python /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Genera
     --model_dir $MODEL_DIR \
     --dataset $DATASET \
     --output_dir $OUTPUT_DIR \
-    --max_new_tokens 1024 \
+    --max_new_tokens 384 \

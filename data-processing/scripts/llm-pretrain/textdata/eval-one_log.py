@@ -197,9 +197,9 @@ def regenerate_one_log(model, tokenizer, prompt, max_new_tokens):
     ]
 
     decode_cfgs = [
-        dict(do_sample=False, num_beams=3,  repetition_penalty=1.15, no_repeat_ngram_size=8),
-        dict(do_sample=True,  temperature=0.7, top_p=0.9,  top_k=50,  repetition_penalty=1.2,  no_repeat_ngram_size=8),
-        dict(do_sample=True,  temperature=0.6, top_p=0.85, top_k=100, repetition_penalty=1.25, no_repeat_ngram_size=10),
+        dict(do_sample=False, num_beams=3,  repetition_penalty=1.5, no_repeat_ngram_size=10),
+        dict(do_sample=True,  temperature=0.7, top_p=0.9,  top_k=50,  repetition_penalty=1.5,  no_repeat_ngram_size=12),
+        dict(do_sample=True,  temperature=0.6, top_p=0.85, top_k=100, repetition_penalty=1.6, no_repeat_ngram_size=12),
         dict(do_sample=False, num_beams=5,  repetition_penalty=1.15, no_repeat_ngram_size=8),  # final deterministic
     ]
 
@@ -462,8 +462,8 @@ def main(args):
                 max_new_tokens=args.max_new_tokens,
                 do_sample=False,
                 num_beams=3,
-                repetition_penalty=1.1,
-                no_repeat_ngram_size=6,
+                repetition_penalty=1.45,
+                no_repeat_ngram_size=10,
                 pad_token_id=tokenizer.eos_token_id,
                 eos_token_id=tokenizer.eos_token_id,
             )

@@ -6,8 +6,8 @@ from pathlib import Path
 MITRE_MAPPING_FILE = r"C:\Users\AHMED\Desktop\new-approch\dataset\mitre_techniques.json"  # Set to None if you don't have it
 
 BASE_LOGS_DIR = r"C:\Users\AHMED\Desktop\new-approch\dataset\base-logs\sub_variants"
-PROMPT_DIR = r"C:\Users\AHMED\Desktop\new-approch\dataset\prompts"
-NUM_VARIANTS = 5
+PROMPT_DIR = r"C:\Users\AHMED\Desktop\new-approch\dataset\prompts-one"
+NUM_VARIANTS = 1
 
 # Optional: Load MITRE technique name/desc mapping
 mitre_map = {}
@@ -47,14 +47,7 @@ for tech_dir in Path(BASE_LOGS_DIR).iterdir():
 
         # 🟦 Build the detailed prompt (copy-paste/modify as needed)
         prompt = f"""
-You are an expert in Windows Event Log generation for cybersecurity detection. Your task is to create synthetic Windows event logs for a given MITRE ATT&CK technique using the provided base log template.
-
-----
-MITRE Technique Context:
-- ID: {technique_id}
-- Name: {technique_name or '[Unknown Technique Name]'}
-- Description: { technique_desc or '[No Description Provided]'}
-----
+You are an expert in Windows Event Log generation for cybersecurity detection. Your task is to create synthetic Windows event logs for a  MITRE ATT&CK technique {technique_id} using the provided base log template.
 
 Instructions:
 - Base Log: The following is a structured base log extracted from a detection rule or Sigma rule. It describes a specific adversarial behavior mapped to a MITRE ATT&CK technique.
@@ -70,9 +63,8 @@ Instructions for log generation:
 Base Log Template:
 {json.dumps(base_log, indent=2)}
 
-
-- Your output: Generate {NUM_VARIANTS} realistic, unique Windows event logs in JSON, each conforming to the structure and critical fields of the base log and aligned to the MITRE technique below.
-  - Each log should reflect possible real-world variations (e.g., file names, paths, user names, timestamps), but must keep the core malicious behavior described in "fields". Output exactly {NUM_VARIANTS} unique Windows event logs in JSON format, each as a single-line JSON object.
+Your output: Generate 1 realistic, unique Windows event log in JSON, each conforming to the structure and critical fields of the base log and aligned to the MITRE technique below. 
+- Each log should reflect possible real-world variations (e.g., file names, paths, user names, timestamps), but must keep the core malicious behavior described in \"fields\". Output exactly 1 unique Windows event log in JSON format, each as a single-line JSON object.
 
 """
 
