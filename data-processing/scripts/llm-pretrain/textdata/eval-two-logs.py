@@ -1,12 +1,12 @@
 import argparse, os, json, re
 from collections import Counter
+from difflib import SequenceMatcher
 from tqdm import tqdm
 
 import datasets
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
-from difflib import SequenceMatcher
 
 RESPONSE_MARKER = "### Response:\n"
 
@@ -21,7 +21,7 @@ def extract_response(text: str) -> str:
 
 def tokenize_simple(s: str):
     # lightweight tokenization good for log-like text
-    return re.findall(r"[A-Za-z0-9_.:\\/\\\\-]+|[\{\}\[\]\(\):,\"'=]|\\n|\\r\\n", s)
+    return re.findall(r"[A-Za-z0-9_.:\\/\\\\-]+|[\\{\\}\\[\\]\\(\\):,\\\"'=]|\\n|\\r\\n", s)
 
 def bigram_jaccard(a: str, b: str) -> float:
     def bigrams(tokens):
@@ -105,6 +105,26 @@ def indicator_scores(gen: str, ref: str):
     mf1 = avg([per[k]["f1"] for k in keys])
     return per, {"macro_precision": mp, "macro_recall": mr, "macro_f1": mf1}
 
+# ===========================
+# NEW: Micro indicator metrics (pooled across ALL types)
+# ===========================
+def extract_indicator_items(s: str):
+    d = extract_indicators(s)
+    items = set()
+    for k, vs in d.items():
+        for v in vs:
+            items.add((k, v))
+    return items
+
+def indicator_micro_scores(gen: str, ref: str):
+    G = extract_indicator_items(gen)
+    R = extract_indicator_items(ref)
+    tp = len(G & R)
+    p = tp / max(1, len(G))
+    r = tp / max(1, len(R))
+    f1 = 2*p*r / max(1e-9, (p + r)) if (p + r) else 0.0
+    return {"precision": p, "recall": r, "f1": f1, "ref_n": len(R), "gen_n": len(G), "tp": tp}
+
 # ---------------------------
 # Counting + truncation
 # ---------------------------
@@ -173,11 +193,10 @@ def regenerate_two_logs_joint(model, tokenizer, prompt, max_new_tokens):
     ]
 
     decode_cfgs = [
-        dict(do_sample=False, num_beams=3, repetition_penalty=1.15, no_repeat_ngram_size=8),
-        dict(do_sample=True, temperature=0.7, top_p=0.9, top_k=50, repetition_penalty=1.2, no_repeat_ngram_size=8),
-        dict(do_sample=True, temperature=0.6, top_p=0.85, top_k=100, repetition_penalty=1.25, no_repeat_ngram_size=10),
-        # final deterministic try with more beams
-        dict(do_sample=False, num_beams=5, repetition_penalty=1.15, no_repeat_ngram_size=8),
+        dict(do_sample=False, num_beams=3,  repetition_penalty=1.45, no_repeat_ngram_size=10),
+        dict(do_sample=True,  temperature=0.7, top_p=0.9,  top_k=50,  repetition_penalty=1.5,  no_repeat_ngram_size=12),
+        dict(do_sample=True,  temperature=0.6, top_p=0.85, top_k=100, repetition_penalty=1.6, no_repeat_ngram_size=12),
+        dict(do_sample=False, num_beams=5,  repetition_penalty=1.15, no_repeat_ngram_size=8),  # final deterministic
     ]
 
     best_text = ""
@@ -230,6 +249,151 @@ def regenerate_two_logs_joint(model, tokenizer, prompt, max_new_tokens):
 
     return best_text  # best effort
 
+# ===========================
+# NEW: Base-Log fields macro P/R/F1 (from prompt)
+# ===========================
+OP_PAT = re.compile(r"^(?P<key>[A-Za-z0-9_.-]+?)(?:\|(?P<op>[A-Za-z0-9_.-]+))?$")
+KEY_ALIASES = {
+    "Host": "Hostname",
+    "Computer": "Hostname",
+    "Provider": "ProviderName",
+    "User": "UserName",
+    "EventId": "EventID",
+    "EventID": "EventID",
+}
+
+def _find_template_json(prompt_text: str):
+    anchor = "Base Log Template:"
+    i = prompt_text.find(anchor)
+    if i < 0:
+        return None
+    s = prompt_text[i + len(anchor):]
+    j = s.find("{")
+    if j < 0:
+        return None
+    depth = 0
+    start = j
+    end = None
+    for k, ch in enumerate(s[start:], start):
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                end = k + 1
+                break
+    if end is None:
+        return None
+    try:
+        return json.loads(s[start:end])
+    except Exception:
+        return None
+
+def _collect_required_fields(tmpl: dict):
+    """Return list of (field_name_without_op, required_value_as_string) from tmpl['fields'] subtree."""
+    req = []
+    fields = (tmpl or {}).get("fields") or {}
+    def walk(d):
+        if not isinstance(d, dict):
+            return
+        for k, v in d.items():
+            if isinstance(v, dict):
+                walk(v)
+            else:
+                m = OP_PAT.match(k)
+                if not m:
+                    continue
+                fld = m.group("key")
+                req.append((fld, v))
+    walk(fields)
+    return req
+
+def _normalize_name(n: str) -> str:
+    return KEY_ALIASES.get(n, n)
+
+def _get_value_by_path(obj: dict, field: str):
+    if not isinstance(obj, dict):
+        return None
+    cur = obj
+    for p in field.split("."):
+        p = _normalize_name(p)
+        if isinstance(cur, dict) and p in cur:
+            cur = cur[p]
+        else:
+            return None
+    return cur
+
+def _norm_pathish(x):
+    if x is None:
+        return None
+    if not isinstance(x, str):
+        x = str(x)
+    x = x.strip().replace("/", "\\")
+    return x.lower()
+
+def fields_prf_on_prompt_and_gen(prompt_text: str, generated_text: str):
+    """
+    Macro P/R/F1 only over fields listed in the Base Log Template's 'fields' block.
+    Operators are ignored. Matching is permissive (substring, case-insensitive, path-normalized).
+    For two-logs output, we try the first JSON line; if parsing fails, we fall back to raw text.
+    """
+    tmpl = _find_template_json(prompt_text)
+    required = _collect_required_fields(tmpl)
+    R = len(required)
+
+    # Try to parse first JSON line
+    line = ""
+    if generated_text.strip():
+        for ln in generated_text.strip().splitlines():
+            ln = ln.strip()
+            if ln.startswith("{"):
+                line = ln
+                break
+    parsed = True
+    try:
+        gen = json.loads(line) if line else None
+        if isinstance(gen, list) and gen:
+            gen = gen[0]
+        if not isinstance(gen, dict):
+            parsed = False
+    except Exception:
+        parsed = False
+        gen = None
+
+    per = []
+    tp = fp = fn = 0
+
+    if parsed:
+        for fld, want in required:
+            want_s = _norm_pathish(want)
+            got = _get_value_by_path(gen, _normalize_name(fld))
+            got_s = _norm_pathish(got)
+            if got_s is None:
+                fn += 1
+                per.append({'field': fld, 'want': str(want), 'got': None, 'pass': False})
+            else:
+                ok = want_s in got_s
+                if ok: tp += 1
+                else:  fp += 1
+                per.append({'field': fld, 'want': str(want), 'got': str(got), 'pass': bool(ok)})
+    else:
+        raw = _norm_pathish(generated_text or "")
+        for fld, want in required:
+            want_s = _norm_pathish(want)
+            ok = (want_s in raw)
+            if ok: tp += 1
+            else:  fn += 1
+            per.append({'field': fld, 'want': str(want), 'got': '(raw-text)', 'pass': bool(ok)})
+
+    P = tp / max(1, tp + fp)
+    Rr = tp / max(1, tp + fn)
+    F1 = 2 * P * Rr / max(1e-9, (P + Rr)) if (P + Rr) else 0.0
+    return {
+        'precision': P, 'recall': Rr, 'f1': F1,
+        'required_n': R, 'tp': tp, 'fp': fp, 'fn': fn,
+        'per_field': per, 'parsed': parsed
+    }
+
 # ---------------------------
 # Main
 # ---------------------------
@@ -239,9 +403,6 @@ def main(args):
     print(f"CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES','<unset>')}")
     device_map = "auto" if cuda_ok else {"": "cpu"}
     print(f"Using device map: {device_map}")
-
-
-
 
     print("Loading model from", args.model_dir)
     model = AutoModelForCausalLM.from_pretrained(
@@ -268,6 +429,12 @@ def main(args):
     macro_p, macro_r, macro_f1 = [], [], []
     valid_counts, exact_two_flags = [], []
 
+    # NEW: Base-log fields macro metrics
+    field_precisions, field_recalls, field_f1s = [], [], []
+
+    # NEW: Micro indicator metrics (pooled across ALL types)
+    micro_p_list, micro_r_list, micro_f1_list = [], [], []
+
     results = []
 
     for ex in tqdm(samples):
@@ -287,8 +454,8 @@ def main(args):
                 max_new_tokens=args.max_new_tokens,
                 do_sample=False,
                 num_beams=3,
-                repetition_penalty=1.1,
-                no_repeat_ngram_size=6,
+                repetition_penalty=1.45,
+                no_repeat_ngram_size=10,
                 pad_token_id=tokenizer.eos_token_id,
                 eos_token_id=tokenizer.eos_token_id,
             )
@@ -313,6 +480,14 @@ def main(args):
         exact_two_flags.append(int(cnt == 2))
 
         rec = {"generated": gen_text, "json_like_count": cnt}
+
+        # --- NEW: Base-Log fields macro P/R/F1 (from the prompt) ---
+        prf = fields_prf_on_prompt_and_gen(prompt, gen_text)
+        field_precisions.append(prf['precision'])
+        field_recalls.append(prf['recall'])
+        field_f1s.append(prf['f1'])
+        rec["fields_prf"] = prf
+
         if has_reference:
             rec["reference"] = ref_text
 
@@ -326,13 +501,20 @@ def main(args):
             len_ratios.append(length_ratio(gen_text, ref_text))
             rep_rates.append(repetition_rate(gen_text, n=3))
 
-            # --- Indicator metrics ---
+            # --- Indicator metrics (macro) ---
             per, macro = indicator_scores(gen_text, ref_text)
             macro_p.append(macro["macro_precision"])
             macro_r.append(macro["macro_recall"])
             macro_f1.append(macro["macro_f1"])
             rec["indicator_macro"] = macro
             rec["indicator_per_type"] = per
+
+            # --- NEW: Indicator MICRO scores (pooled across all types) ---
+            micro = indicator_micro_scores(gen_text, ref_text)
+            rec["indicator_micro"] = micro
+            micro_p_list.append(micro["precision"])
+            micro_r_list.append(micro["recall"])
+            micro_f1_list.append(micro["f1"])
 
         results.append(rec)
 
@@ -356,8 +538,17 @@ def main(args):
         print(f"Macro Precision:              {avg(macro_p):.4f}")
         print(f"Macro Recall:                 {avg(macro_r):.4f}")
         print(f"Macro F1:                     {avg(macro_f1):.4f}")
+        print("\n------ Indicator MICRO Scores (pooled across all types) ------")
+        print(f"Micro Precision:              {avg(micro_p_list):.4f}")
+        print(f"Micro Recall:                 {avg(micro_r_list):.4f}")
+        print(f"Micro F1:                     {avg(micro_f1_list):.4f}")
     else:
         print("\n[Info] No references found. Only text generation logged.")
+
+    print("\n------ Macro over required fields (Base Log fields only) ------")
+    print(f"Field Precision (macro):      {avg(field_precisions):.4f}")
+    print(f"Field Recall    (macro):      {avg(field_recalls):.4f}")
+    print(f"Field F1        (macro):      {avg(field_f1s):.4f}")
 
     print("\n---------- Validity (counted as top-level JSON blocks) ----------")
     print(f"Avg # of logs in output:      {avg(valid_counts):.2f}")
