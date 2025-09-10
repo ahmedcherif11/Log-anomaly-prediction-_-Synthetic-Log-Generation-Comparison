@@ -4,7 +4,7 @@
 #SBATCH --mem=32000
 #SBATCH --cpus-per-task=4
 #SBATCH --output=$SCRATCH/models/slurm-logs/gen-%N-%j.out
-#SBATCH --time=02:00:00
+#SBATCH --time=24:00:00
 #SBATCH --exclude=cdr2656,cdr2658
 #SBATCH --account=def-dmouheb
 #SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
@@ -17,14 +17,14 @@ export NCCL_SHM_DISABLE=1
 source ./statics/environment.sh "$HOME/training_env" offline
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
 
-MODEL_RUN=llama-3.1-8B-TWO-log-generator-eval3
-MODEL_DIR=$SCRATCH/models/llama-gen-logs-model
-DATASET=$SCRATCH/datasets/shortest-prompts     # HuggingFace disk format
+MODEL_RUN=llama-3.1-8B-gen
+MODEL_DIR=$SCRATCH/models/llama-3.1-8B-one-log-generator  
+DATASET=$SCRATCH/datasets/gen-prompts     # HuggingFace disk format
 OUTPUT_JSONL=$SCRATCH/eval/$MODEL_RUN/generated.jsonl
 
 mkdir -p $(dirname $OUTPUT_JSONL)
 
-python /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/gen.py \
+python /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/gen.py \
     --model_dir $MODEL_DIR \
     --dataset $DATASET \
     --output_jsonl $OUTPUT_JSONL \
