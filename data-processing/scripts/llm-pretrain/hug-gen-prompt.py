@@ -48,7 +48,13 @@ def main(args):
     examples = to_examples(rows)
     if not examples:
         raise RuntimeError("No valid examples to save.")
-    ds = Dataset.from_list(examples)
+    # Write filtered examples to a temp JSONL file
+    temp_jsonl = args.out.rstrip("/") + ".tmp.jsonl"
+    with open(temp_jsonl, "w", encoding="utf-8") as f:
+        for ex in examples:
+            f.write(json.dumps(ex, ensure_ascii=False) + "\n")
+    from datasets import load_dataset
+    ds = load_dataset("json", data_files=temp_jsonl, split="train")
     ds.save_to_disk(args.out)
     print("Columns:", ds.column_names)
     print("Dataset size:", len(ds))
