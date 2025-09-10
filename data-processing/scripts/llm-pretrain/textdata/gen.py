@@ -29,12 +29,13 @@ def main(args):
     disable_progress_bars()
     print(f"Loading dataset from {args.dataset}")
     ds = load_from_disk(args.dataset)
-    # Use "test" split if present, else first available split
-    if "test" in ds:
-        samples = ds["test"]
-    else:
-        samples = ds[list(ds.keys())[0]]
-
+    if hasattr(ds, "keys"):  # DatasetDict (has splits)
+        if "test" in ds:
+            samples = ds["test"]
+        else:
+            samples = ds[list(ds.keys())[0]]
+    else:  # Dataset (no splits)
+        samples = ds
     results = []
     for ex in tqdm(samples):
         prompt = ex["prompt"]
