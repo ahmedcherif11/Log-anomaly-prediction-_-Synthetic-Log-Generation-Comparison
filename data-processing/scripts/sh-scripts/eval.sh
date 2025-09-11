@@ -4,7 +4,7 @@
 #SBATCH --mem=32000
 #SBATCH --cpus-per-task=4
 #SBATCH --output=$SCRATCH/models/slurm-logs/eval-%N-%j.out
-#SBATCH --time=02:00:00
+#SBATCH --time=04:30:00
 #SBATCH --exclude=cdr2656,cdr2658
 #SBATCH --account=def-dmouheb
 #SBATCH --mail-user=ahmed.cherif.1@ulaval.ca
