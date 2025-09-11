@@ -14,7 +14,8 @@ RESPONSE_MARKER = "### Response:\n"
 # Text helpers / metrics
 # ---------------------------
 def avg(xs):
-    return (sum(xs) / max(1, len(xs)))
+    nonzero = [x for x in xs if x != 0]
+    return (sum(nonzero) / max(1, len(nonzero)))
 
 def extract_response(text: str) -> str:
     return text.split(RESPONSE_MARKER, 1)[-1].strip() if RESPONSE_MARKER in text else text.strip()
@@ -67,6 +68,8 @@ RX = {
     "ipv4": re.compile(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b"),
     "timestamp": re.compile(r"\b[12][0-9]{3}-[01][0-9]-[0-3][0-9][T ](?:[0-2][0-9]:[0-5][0-9]:[0-5][0-9](?:\.[0-9]{1,3})?Z?)", re.I),
     "tech_id": re.compile(r"\bT[0-9]{4}(?:\.[0-9]{3})?\b", re.I),
+    "SourceName": re.compile(r"\bSourceName\b[^\"\']{0,5}[\"\']([^\"\']+)[\"\']", re.I),
+    "ProviderGuid": re.compile(r"\bProviderGuid\b[^\"\']{0,5}[\"\']([^\"\']+)[\"\']", re.I),
 }
 
 def extract_indicators(s: str):
@@ -82,6 +85,8 @@ def extract_indicators(s: str):
     found["ipv4"] = set(m.group(0) for m in RX["ipv4"].finditer(s))
     found["timestamp"] = set(m.group(0) for m in RX["timestamp"].finditer(s))
     found["tech_id"] = set(m.group(0).upper() for m in RX["tech_id"].finditer(s))
+    found["SourceName"] = set(m.group(1).lower() for m in RX["SourceName"].finditer(s))
+    found["ProviderGuid"] = set(m.group(1).lower() for m in RX["ProviderGuid"].finditer(s))
     return found
 
 def set_pr(recall_set, precision_set):
@@ -95,7 +100,7 @@ def set_pr(recall_set, precision_set):
 def indicator_scores(gen: str, ref: str):
     g = extract_indicators(gen)
     r = extract_indicators(ref)
-    keys = ["eventid","provider_full","channel","username","proc_image","path_any","ipv4","timestamp","tech_id"]
+    keys = ["eventid","provider_full","channel","username","proc_image","path_any","ipv4","timestamp","tech_id","SourceName","ProviderGuid"]
     per = {}
     for k in keys:
         p, rc, f1 = set_pr(r[k], g[k])
