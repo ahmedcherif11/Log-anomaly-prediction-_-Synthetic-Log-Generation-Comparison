@@ -42,20 +42,20 @@ if [ $? -ne 0 ]; then
   exit 0
 fi
 # --- CHOOSE YOUR INPUTS ---
-MODEL_RUN=llama-3.1-8B-two-eval # <-- or final-model after merging
-MODEL_DIR=$SCRATCH/models/llama-gen-logs-model   # <-- For merged, maybe $SCRATCH/models/final-model
+MODEL_RUN=llama-3.1-8B-one-eval # <-- or final-model after merging
+MODEL_DIR=$SCRATCH/models/llama-3.1-8B-one-log-generator   # <-- For merged, maybe $SCRATCH/models/final-model
 OUTPUT_DIR=$SCRATCH/eval/$MODEL_RUN
 
 # For test set with references: 
-DATASET=$SCRATCH/datasets/shortest-prompts     # HuggingFace disk format with test split
+DATASET=$SCRATCH/datasets/prompts-one-log      # HuggingFace disk format with test split
 
 # For generation-only on raw prompts (jsonl file):
 # DATASET=$SCRATCH/datasets/synthetic_prompts.jsonl
 
 mkdir -p $OUTPUT_DIR
 
-python /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/eval-two-logs.py \
+python /project/def-dmouheb/cherif/Log-anomaly-prediction-_-Synthetic-Log-Generation-Comparison/data-processing/scripts/llm-pretrain/textdata/eval-one_log.py \
     --model_dir $MODEL_DIR \
     --dataset $DATASET \
     --output_dir $OUTPUT_DIR \
-    --max_new_tokens 512 \
+    --max_new_tokens 384 \
