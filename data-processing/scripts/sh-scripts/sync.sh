@@ -11,7 +11,7 @@ if [ $# -eq 0 ]; then
 fi
 
 if [ -z "$MODEL" ]; then
-  MODEL="$SCRATCH/models/llama-3.1-8B-one-log-generator"
+  MODEL="Blackam09/one-log_gen"
   echo "Model not specified, using default: $MODEL"
 fi
 
