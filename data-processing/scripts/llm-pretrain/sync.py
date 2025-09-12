@@ -41,12 +41,12 @@ def main():
                                                          local_files_only=True)
 
             tokenizer = AutoTokenizer.from_pretrained(f"{args_pars.data_path}run/model", local_files_only=True)
-            model.push_to_hub('Blackam09/one-log_gen')
-            tokenizer.push_to_hub('Blackam09/one-log_gen')
+            model.push_to_hub('Blackam09/two-log-gen')
+            tokenizer.push_to_hub('Blackam09/two-log-gen')
 
         if args_pars.save_dataset:
             data = datasets.load_from_disk(f"{args_pars.data_path}tokenized/loghubQwe_tok")
-            data.push_to_hub('Blackam09/one-log_gen')
+            data.push_to_hub('Blackam09/two-log-gen')
 
 
 if __name__ == "__main__":
