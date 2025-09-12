@@ -11,12 +11,12 @@ if [ $# -eq 0 ]; then
 fi
 
 if [ -z "$MODEL" ]; then
-  MODEL="hubaval/llama-3.1-8B-fttlogs"
+  MODEL="$SCRATCH/models/llama-3.1-8B-one-log-generator"
   echo "Model not specified, using default: $MODEL"
 fi
 
 if [ -z "$MODELPATH" ]; then
-  MODELPATH="$SCRATCH/models/run/llama-3.1-8B-one-log-generator-adapter"
+  MODELPATH="$SCRATCH/models/llama-3.1-8B-one-log-generator"
   echo "Model path not specified, using default: $MODELPATH"
 fi
 
@@ -36,7 +36,7 @@ for param in "$@"; do
 
     elif [ "$param" == "huggingface" ]; then
         echo "Syncing with Hugging Face..."
-        HF_TOKEN=$(python -c "import py_scripts.credentials as cr; print(cr.hf_bis)")
+        HF_TOKEN=$(python -c "import sys; sys.path.append('/home/cherif/scratch/models/run/llm-pretrain'); import credentials as cr; print(cr.hf_key)")
         export HF_TOKEN
         huggingface-cli upload "$MODEL" "$MODELPATH"
         #huggingface-cli upload my-cool-dataset ./data . --repo-type dataset daatset
