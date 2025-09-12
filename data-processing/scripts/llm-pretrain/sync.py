@@ -45,7 +45,7 @@ def main():
             tokenizer.push_to_hub('Blackam09/raw-logs')
 
         if args_pars.save_dataset:
-            data = datasets.load_from_disk(f"{args_pars.data_path}tokenized/loghubQwe_tok")
+            data = datasets.load_from_disk(f"{args_pars.data_path}Blackam09/base-logs-temp")
             data.push_to_hub('Blackam09/raw-logs')
 
 
